@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TaskCoordinator.SSSB;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Executors
 {
     public interface IExecutor
     {

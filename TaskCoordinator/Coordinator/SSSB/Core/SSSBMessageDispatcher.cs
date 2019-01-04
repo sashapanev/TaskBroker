@@ -88,14 +88,29 @@ namespace TaskCoordinator.SSSB
                 ServiceMessageEventArgs serviceArgs = this.CreateServiceMessageEventArgs(message, token);
                 try
                 {
-                    using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
+                    bool isSync = true;
+                    Task processTask = Task.FromException(new Exception($"The message: {message.MessageType} ConversationHandle: {message.ConversationHandle} is not handled"));
+                    try
                     {
-                        serviceArgs = await messageHandler.HandleMessage(this._sssbService, serviceArgs).ConfigureAwait(continueOnCapturedContext: false);
-                        transactionScope.Complete();
+                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
+                        {
+                            serviceArgs = await messageHandler.HandleMessage(this._sssbService, serviceArgs).ConfigureAwait(continueOnCapturedContext: false);
+                            transactionScope.Complete();
+                        }
+                        isSync = serviceArgs.Completion.IsCompleted;
+                    }
+                    catch(Exception handleEx)
+                    {
+                        if (!serviceArgs.TaskCompletionSource.TrySetException(handleEx))
+                        {
+                            _logger.LogError(ErrorHelper.GetFullMessage(handleEx));
+                        }
+                    }
+                    finally
+                    {
+                        processTask = this._HandleProcessingResult(dbconnection, message, token, serviceArgs, isSync);
                     }
 
-                    bool isSync = serviceArgs.Completion.IsCompleted;
-                    Task processTask = this._HandleProcessingResult(dbconnection, message, token, serviceArgs, isSync);
                     if (isSync)
                     {
                         await processTask;
@@ -103,8 +118,10 @@ namespace TaskCoordinator.SSSB
                 }
                 catch (Exception ex)
                 {
-                    serviceArgs.TaskCompletionSource.TrySetException(ex);
-                    throw;
+                    if (!serviceArgs.TaskCompletionSource.TrySetException(ex))
+                    {
+                        _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                    }
                 }
             }
             else if (message.MessageType == SSSBMessage.EndDialogMessageType)

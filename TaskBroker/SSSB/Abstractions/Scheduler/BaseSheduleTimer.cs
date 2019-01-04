@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Scheduler
 {
     public abstract class BaseSheduleTimer : IDisposable
     {

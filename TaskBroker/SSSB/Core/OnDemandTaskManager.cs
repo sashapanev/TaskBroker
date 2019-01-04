@@ -8,12 +8,13 @@ using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using TaskBroker.SSSB.Executors;
 using TaskCoordinator.Database;
 using TaskCoordinator.SSSB.EF;
 
 namespace TaskBroker.SSSB
 {
-    public class OnDemandTaskManager : BaseManager
+    public class OnDemandTaskManager: BaseManager
     {
         private Guid _id = Guid.Empty;
         private IExecutor _currentExecutor;
@@ -50,13 +51,13 @@ namespace TaskBroker.SSSB
             if (_taskInfos.TryGetValue(id, out res))
                 return res;
 
-            using (var scope = Services.CreateScope())
+            using (var scope = this.Services.CreateScope())
             {
                 var provider = scope.ServiceProvider;
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.Suppress, TimeSpan.FromSeconds(30), TransactionScopeAsyncFlowOption.Enabled))
                 {
                     var database = provider.GetRequiredService<SSSBDbContext>();
-                    OnDemandTask task = await database.OnDemandTask.Include((d)=>d.Executor).SingleOrDefaultAsync(t => t.OnDemandTaskId == id);
+                    OnDemandTask task = await database.OnDemandTask.Include((d)=> d.Executor).SingleOrDefaultAsync(t => t.OnDemandTaskId == id);
                     if (task == null)
                         throw new Exception(string.Format("OnDemandTask with taskID={0} was not found", id));
                     res = TaskInfo.FromOnDemandTask(task);

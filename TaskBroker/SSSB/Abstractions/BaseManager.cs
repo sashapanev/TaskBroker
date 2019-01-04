@@ -6,25 +6,20 @@ namespace TaskBroker.SSSB
 {
     public class BaseManager : IDisposable
     {
-        private SSSBDbContext _db;
+        private Lazy<SSSBDbContext> _db;
         private readonly IServiceProvider _services;
 
         public BaseManager(IServiceProvider services)
         {
             this._services = services;
+            this._db = new Lazy<SSSBDbContext>(() => { return this._services.GetRequiredService<SSSBDbContext>(); }, true);
         }
 
         public SSSBDbContext SSSBDb
         {
             get
             {
-                if (this._db== null)
-                {
-
-                    this._db = this._services.GetRequiredService<SSSBDbContext>();
-                }
-
-                return this._db;
+                return this._db.Value;
             }
         }
 

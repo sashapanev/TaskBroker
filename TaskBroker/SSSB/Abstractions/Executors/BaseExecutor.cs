@@ -13,7 +13,7 @@ using TaskCoordinator.Database;
 using TaskCoordinator.SSSB;
 using TaskCoordinator.SSSB.EF;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Executors
 {
     public abstract class BaseExecutor: IExecutor, IDisposable
     {
@@ -68,6 +68,14 @@ namespace TaskBroker.SSSB
             }
         }
 
+        public IServiceProvider Services
+        {
+            get
+            {
+                return this.TasksManager.Services;
+            }
+        }
+
         public SSSBDbContext DB
         {
             get
@@ -91,29 +99,33 @@ namespace TaskBroker.SSSB
         {
         }
 
-        #region Helper Methods
+        #region HandleMessage Results Helper Methods
         public HandleMessageResult Noop()
         {
-            var res = (HandleMessageResult)this.TasksManager.Services.GetRequiredService<NoopMessageResult>();
+            var res = (HandleMessageResult)this.Services.GetRequiredService<NoopMessageResult>();
             return res;
         }
 
         public HandleMessageResult EndDialog()
         {
-            var res = (HandleMessageResult)this.TasksManager.Services.GetRequiredService<EndDialogMessageResult>();
+            var res = (HandleMessageResult)this.Services.GetRequiredService<EndDialogMessageResult>();
             return res;
         }
 
-        public HandleMessageResult StepCompleted()
+        public HandleMessageResult StepCompleted(bool isFinal = false)
         {
-            var res = (HandleMessageResult)this.TasksManager.Services.GetRequiredService<StepCompleteMessageResult>();
-            return res;
+            if (isFinal)
+                return (HandleMessageResult)this.Services.GetRequiredService<FinalStepCompleteMessageResult>();
+            else
+                return (HandleMessageResult)this.Services.GetRequiredService<StepCompleteMessageResult>();
         }
 
-        public HandleMessageResult FinalStepCompleted()
+        public HandleMessageResult EmptyMessage(bool isFinal = false)
         {
-            var res = (HandleMessageResult)this.TasksManager.Services.GetRequiredService<FinalStepCompleteMessageResult>();
-            return res;
+            if (isFinal)
+                return (HandleMessageResult)this.Services.GetRequiredService<FinalEmptyMessageResult>();
+            else
+                return (HandleMessageResult)this.Services.GetRequiredService<EmptyMessageResult>();
         }
         #endregion
 
@@ -268,7 +280,7 @@ namespace TaskBroker.SSSB
 
         protected virtual void Dispose()
         {
-           
+            // Debug($"Executor {this.GetType().Name} is Disposed");
         }
 
         void IDisposable.Dispose()

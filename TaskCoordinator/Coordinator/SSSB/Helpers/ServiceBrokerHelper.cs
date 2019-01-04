@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using TaskCoordinator.Database;
 
@@ -20,6 +21,12 @@ namespace TaskCoordinator.SSSB
             _manager = manager;
         }
 
+        [Conditional("DEBUG")]
+        public void Debug(string msg)
+        {
+            _logger.LogInformation(msg);
+        }
+
         /// <summary>
         /// Запуск диалога обмена сообщениями.
         /// </summary>
@@ -34,7 +41,7 @@ namespace TaskCoordinator.SSSB
         public async Task<Guid> BeginDialogConversation(SqlConnection dbconnection, string fromService, string toService, string contractName, 
 			TimeSpan lifetime, bool withEncryption,	Guid? relatedConversationHandle, Guid? relatedConversationGroupID)
 		{
-			_logger.LogInformation("Выполнение метода BeginDialogConversation(fromService, toService, contractName, lifetime, withEncryption, relatedConversationID, relatedConversationGroupID)");
+			Debug("Выполнение метода BeginDialogConversation(fromService, toService, contractName, lifetime, withEncryption, relatedConversationID, relatedConversationGroupID)");
 			try
 			{
                 Guid? conversationHandle = await _manager.BeginDialogConversation(dbconnection, fromService, toService, contractName,
@@ -63,7 +70,7 @@ namespace TaskCoordinator.SSSB
 		/// <param name="errorDescription"></param>
 		private async Task EndConversation(SqlConnection dbconnection, Guid conversationHandle, bool withCleanup, int? errorCode, string errorDescription)
 		{
-			_logger.LogInformation("Выполнение метода EndConversation(conversationHandle, withCleanup, errorCode, errorDescription)");
+            Debug("Выполнение метода EndConversation(conversationHandle, withCleanup, errorCode, errorDescription)");
 			try
 			{
                 await _manager.EndConversation(dbconnection, conversationHandle, withCleanup, errorCode, errorDescription);
@@ -84,7 +91,7 @@ namespace TaskCoordinator.SSSB
         /// <param name="conversationHandle"></param>
         public async Task SendStepCompletedMessage(SqlConnection dbconnection, Guid conversationHandle)
         {
-            _logger.LogInformation("Выполнение метода SendStepCompletedMessage");
+            Debug("Выполнение метода SendStepCompletedMessage");
             try
             {
 
@@ -100,11 +107,33 @@ namespace TaskCoordinator.SSSB
             }
         }
 
-		/// <summary>
-		/// Завершение диалога.
-		/// </summary>
-		/// <param name="conversationHandle"></param>
-		public Task EndConversation(SqlConnection dbconnection, Guid conversationHandle)
+        /// <summary>
+        /// Послать пустое сообщение
+        /// </summary>
+        /// <param name="conversationHandle"></param>
+        public async Task SendEmptyMessage(SqlConnection dbconnection, Guid conversationHandle)
+        {
+            Debug("Выполнение метода SendEmptyMessage");
+            try
+            {
+
+                await _manager.SendMessage(dbconnection, conversationHandle, SSSBMessage.PPS_EmptyMessageType, new byte[0]);
+            }
+            catch (SqlException ex)
+            {
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ServiceBrokerResources.SendMessageErrMsg, ex);
+            }
+        }
+
+        /// <summary>
+        /// Завершение диалога.
+        /// </summary>
+        /// <param name="conversationHandle"></param>
+        public Task EndConversation(SqlConnection dbconnection, Guid conversationHandle)
 		{
 			return EndConversation(dbconnection, conversationHandle, false, null, null);
 		}
@@ -135,7 +164,7 @@ namespace TaskCoordinator.SSSB
 		/// <param name="message"></param>
 		public async Task SendMessage(SqlConnection dbconnection, SSSBMessage message)
 		{
-			_logger.LogInformation("Выполнение метода SendMessage(message)");
+            Debug("Выполнение метода SendMessage(message)");
 			try
 			{
 
@@ -161,13 +190,13 @@ namespace TaskCoordinator.SSSB
         /// <param name="isWithEncryption"></param>
         /// <param name="activationTime"></param>
         /// <param name="objectID"></param>
-        public async Task<long> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID)
+        public async Task<long?> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID)
 		{
-			_logger.LogInformation("Выполнение метода SendPendingMessage(..)");
+            Debug("Выполнение метода SendPendingMessage(..)");
 			try
 			{
                 long? pendingMessageID = await _manager.SendPendingMessage(dbconnection, objectID, activationTime, fromService, message.ServiceName, message.ContractName, (int)lifetime.TotalSeconds, isWithEncryption, message.ConversationGroupID, message.ConversationHandle, message.Body, message.MessageType, initiatorConversationGroupID);
-                return pendingMessageID.Value;
+                return pendingMessageID;
             }
             catch (SqlException ex)
             {
@@ -179,15 +208,33 @@ namespace TaskCoordinator.SSSB
                 throw new Exception(ServiceBrokerResources.PendingMessageErrMsg, ex);
             }
 		}
-		
-		/// <summary>
-		/// Возвращает название очереди сообщений для сервиса
-		/// </summary>
-		/// <param name="serviceName"></param>
-		/// <returns></returns>
-		public async Task<string> GetServiceQueueName(string serviceName)
+
+        public async Task<int> ProcessPendingMessages(SqlConnection dbconnection, bool processAll= false, string objectID= null)
+        {
+            Debug("Выполнение метода ProcessPendingMessage(..)");
+            try
+            {
+                return await _manager.ProcessPendingMessages(dbconnection, processAll, objectID);
+            }
+            catch (SqlException ex)
+            {
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.ProcessMessagesErrMsg);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ServiceBrokerResources.ProcessMessagesErrMsg, ex);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает название очереди сообщений для сервиса
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public async Task<string> GetServiceQueueName(string serviceName)
 		{
-			_logger.LogInformation("Выполнение метода GetServiceQueueName(serviceName)");
+            Debug("Выполнение метода GetServiceQueueName(serviceName)");
 			try
 			{
                 return await _manager.GetServiceQueueName(serviceName).ConfigureAwait(false);

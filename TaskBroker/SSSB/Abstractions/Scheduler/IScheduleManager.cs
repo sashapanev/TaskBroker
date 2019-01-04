@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Scheduler
 {
     public interface IScheduleManager
     {

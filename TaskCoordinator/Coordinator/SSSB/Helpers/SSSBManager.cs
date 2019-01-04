@@ -234,6 +234,36 @@ namespace TaskCoordinator.SSSB
             }
         }
 
+        public async Task<int> ProcessPendingMessages(
+                SqlConnection dbconnection,
+                bool processAll = false,
+                String objectID = null
+                )
+        {
+            try
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = dbconnection;
+                    command.CommandText = "SSSB.ProcessPendingMessages";
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.Add(new SqlParameter("@RETURN_VALUE", SqlDbType.Int, 0, ParameterDirection.ReturnValue, true, 0, 0, "RETURN_VALUE", DataRowVersion.Current, null));
+                    command.Parameters.Add(new SqlParameter("@ProccessALL", SqlDbType.Bit, 0, ParameterDirection.Input, true, 0, 0, "ProccessALL", DataRowVersion.Current, processAll));
+                    command.Parameters.Add(new SqlParameter("@ObjectID", SqlDbType.VarChar, 50, ParameterDirection.Input, true, 0, 0, "ObjectID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(objectID)));
+
+                    await command.ExecuteNonQueryAsync();
+
+                    return (Int32)command.Parameters[RETURN_VALUE_PARAMETER_NAME].Value;
+                }
+            }
+            catch (SqlException ex)
+            {
+                DBWrapperExceptionsHelper.ThrowError(ex);
+                return 0;
+            }
+        }
+
         #region Recieving Messages
         public async Task<IDataReader> ReceiveMessagesAsync(
             SqlConnection dbconnection,

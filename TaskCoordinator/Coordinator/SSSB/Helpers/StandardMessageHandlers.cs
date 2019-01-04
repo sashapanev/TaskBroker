@@ -60,6 +60,16 @@ namespace TaskCoordinator.SSSB
         }
 
         /// <summary>
+        /// Отправка пустого сообщения
+        /// </summary>
+        /// <param name="receivedMessage"></param>
+        public async Task SendEmptyMessage(SqlConnection dbconnection, SSSBMessage receivedMessage)
+        {
+            if (receivedMessage.ConversationHandle.HasValue)
+                await _serviceBrokerHelper.SendEmptyMessage(dbconnection, receivedMessage.ConversationHandle.Value);
+        }
+
+        /// <summary>
         /// Завершение диалога с отправкой сообщения об ошибке
         /// </summary>
         /// <param name="receivedMessage"></param>

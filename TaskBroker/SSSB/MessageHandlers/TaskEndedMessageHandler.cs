@@ -4,6 +4,7 @@ using Shared.Errors;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TaskBroker.SSSB.Scheduler;
 using TaskCoordinator.SSSB;
 
 namespace TaskBroker.SSSB

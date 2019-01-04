@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TaskCoordinator.SSSB;
 using Microsoft.Extensions.Logging;
+using TaskBroker.SSSB.Scheduler;
 
 namespace TaskBroker.SSSB.Executors
 {

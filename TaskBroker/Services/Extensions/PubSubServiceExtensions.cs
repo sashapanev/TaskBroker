@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using TaskBroker.SSSB;
+using TaskBroker.SSSB.Scheduler;
 using TaskBroker.SSSB.Services;
 using TaskCoordinator.SSSB;
 using TaskCoordinator.SSSB.EF;

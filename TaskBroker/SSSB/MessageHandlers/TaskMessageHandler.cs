@@ -5,6 +5,7 @@ using System;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using TaskBroker.SSSB.Executors;
 using TaskCoordinator.SSSB;
 
 namespace TaskBroker.SSSB

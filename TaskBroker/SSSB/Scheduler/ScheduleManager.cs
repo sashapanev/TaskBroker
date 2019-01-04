@@ -11,7 +11,7 @@ using System.Transactions;
 using TaskCoordinator.Database;
 using TaskCoordinator.SSSB.EF;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Scheduler
 {
     public class ScheduleManager : IScheduleManager
     {

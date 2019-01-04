@@ -25,8 +25,7 @@ namespace TaskCoordinator.SSSB.EF
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=192.168.102.11;Database=InogTmp;Integrated Security=False;User ID=sa;Password=Kolumb88");
+                optionsBuilder.UseSqlServer("Server=.;Database=temp;Integrated Security=False;User ID=sa;Password=***");
             }
         }
 

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Scheduler
 {
     public class ScheduleTimer : BaseSheduleTimer
     {

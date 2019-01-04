@@ -28,7 +28,7 @@ namespace TaskBroker.SSSB.Executors
 
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
-            this.Debug(string.Format("Executing SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
+            // this.Debug(string.Format("Executing SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
             await Task.Delay(3000);
             this.Debug(string.Format("Executed SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
             return EndDialog();
