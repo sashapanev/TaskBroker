@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TaskCoordinator.SSSB.EF;
 
-namespace TaskBroker.SSSB
+namespace TaskBroker.SSSB.Utils
 {
     public class MetaDataManager : BaseManager, IMetaDataManager
     {
