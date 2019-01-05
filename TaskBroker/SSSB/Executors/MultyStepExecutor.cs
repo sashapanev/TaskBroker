@@ -40,38 +40,25 @@ namespace TaskBroker.SSSB.Executors
             }
         }
 
-        protected void OnCompleted(CompletionResult completion, string error= null)
-        {
-            // this.SendNotification(new CallbackParamOtkaz { ClientContext = this._clientContext, Msg = "END", IsError = false, IsCanceled = canceled, TFondLet2ID = this._NUM, IsStart = false, EventTime = DateTime.Now });
-        }
-
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
             if (!string.IsNullOrEmpty(_error))
             {
-                this.OnCompleted(CompletionResult.Error, _error);
                 throw new OperationCanceledException();
             }
 
-            if (await MetaDataManager.IsCanceled(token))
+            var metaData = await MetaDataManager.GetMetaData(token);
+            if (metaData.IsCanceled == true)
             {
-                this.OnCompleted(CompletionResult.Cancelled);
                 throw new OperationCanceledException();
             }
 
-            // this.Debug(string.Format("Executing SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
+            this.Debug(string.Format("Executing SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
             await Task.Delay(3000);
 
-            await this.MetaDataManager.SetCompleted();
-
-            CompletionResult completion = await this.MetaDataManager.IsAllTasksCompleted(token);
-
-            if (completion != CompletionResult.None)
-            {
-                this.OnCompleted(completion);
-            }
-
-            return EmptyMessage();
+            CompletionResult completion = await MetaDataManager.SetCompleted();
+           
+            return EndDialog();
         }
     }
 }

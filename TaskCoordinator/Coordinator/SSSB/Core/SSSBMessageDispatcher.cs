@@ -64,7 +64,7 @@ namespace TaskCoordinator.SSSB
                     }
                 }
 
-                await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, msgerr.FirstError.Message, null);
+                await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, msgerr.FirstError.Message, 4);
 
                 string error = string.Format("Message {0} caused MAX Number of errors '{1}'. Dialog aborted!", message.MessageType, msgerr.FirstError.Message);
                 _logger.LogError(error);
@@ -177,17 +177,21 @@ namespace TaskCoordinator.SSSB
             }
             catch (OperationCanceledException)
             {
-                await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, "Operation Cancelled", null);
+                await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, $"Operation on Service: '{message.ServiceName}', MessageType: '{message.MessageType}', ConversationHandle: '{message.ConversationHandle}', is Cancelled", 1);
             }
-            catch(Exception ex)
+            catch (PPSException ex)
+            {
+                await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message,  $"Operation on Service: '{message.ServiceName}', MessageType: '{message.MessageType}', ConversationHandle: '{message.ConversationHandle}', ended with Error: {ex.Message}", 2);
+            }
+            catch (Exception ex)
             {
                 try
                 {
-                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                    _logger.LogError(new EventId(0, message.ServiceName), ErrorHelper.GetFullMessage(ex));
                 }
                 finally
                 {
-                    await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, ErrorHelper.GetFullMessage(ex), null);
+                    await _standardMessageHandlers.EndDialogMessageWithErrorHandler(dbconnection, message, $"Operation on Service: '{message.ServiceName}', MessageType: '{message.MessageType}', ConversationHandle: '{message.ConversationHandle}', ended with Error: {ex.Message}", 3);
                 }
             }
         }
@@ -210,6 +214,10 @@ namespace TaskCoordinator.SSSB
                 catch (OperationCanceledException)
                 {
                     // NOOP
+                }
+                catch (PPSException)
+                {
+                    // Already Logged
                 }
                 catch (Exception ex)
                 {

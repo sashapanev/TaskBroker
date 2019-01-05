@@ -79,6 +79,10 @@ namespace TaskCoordinator
             {
                 //NOOP
             }
+            catch (PPSException)
+            {
+                // Already Logged
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ErrorHelper.GetFullMessage(ex));
@@ -153,7 +157,7 @@ namespace TaskCoordinator
             catch (Exception ex)
             {
                 this._ExitTask(taskId);
-                if (!(ex is OperationCanceledException))
+                if (!(ex is OperationCanceledException) && !(ex is PPSException))
                 {
                     Logger.LogError(ErrorHelper.GetFullMessage(ex));
                 }
@@ -190,6 +194,10 @@ namespace TaskCoordinator
             catch (OperationCanceledException)
             {
                 // NOOP
+            }
+            catch (PPSException)
+            {
+                // Already Logged
             }
             catch (Exception ex)
             {

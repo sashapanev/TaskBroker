@@ -12,43 +12,33 @@ namespace TaskBroker.SSSB
     public class MetaDataManager : BaseManager, IMetaDataManager
     {
         private int _metaDataID;
-        private MetaData _metaData;
 
         public MetaDataManager(int MetaDataID, IServiceProvider services) :
             base(services)
         {
             this._metaDataID = MetaDataID;
-            this._metaData = null;
         }
 
-        public async Task<MetaData> GetMetaData(CancellationToken token = default(CancellationToken))
+        public Task<MetaData> GetMetaData(CancellationToken token = default(CancellationToken))
         {
-            this._metaData = await this.SSSBDb.MetaData.AsNoTracking().Where(md => md.MetaDataId == this.MetaDataID).SingleAsync(token);
-            return this._metaData;
+            return this.SSSBDb.MetaData.AsNoTracking().Where(md => md.MetaDataId == this.MetaDataID).SingleAsync(token);
         }
 
-        public async Task<bool> IsCanceled(CancellationToken token = default(CancellationToken))
+        public CompletionResult IsAllTasksCompleted(MetaData metaData)
         {
-            var entity = await GetMetaData(token);
-            return entity.IsCanceled.HasValue && entity.IsCanceled.Value;
-        }
-
-        public async Task<CompletionResult> IsAllTasksCompleted(CancellationToken token = default(CancellationToken))
-        {
-            var entity = await GetMetaData(token);
-            if (entity.Error != null)
+            if (metaData.Error != null)
             {
                 return CompletionResult.Error;
             }
-            bool isCancelled = entity.IsCanceled.HasValue && entity.IsCanceled.Value;
+            bool isCancelled = metaData.IsCanceled == true;
             if (isCancelled)
             {
                 return CompletionResult.Cancelled;
             }
-            return (entity.RequestCount == entity.RequestCompleted) ? CompletionResult.Completed : CompletionResult.None;
+            return (metaData.RequestCount == metaData.RequestCompleted) ? CompletionResult.Completed : CompletionResult.None;
         }
 
-        private async Task _SetCompleted(string error = null, string result = null, bool? isCancelled = null)
+        private async Task<CompletionResult> _SetCompleted(string error = null, string result = null, bool? isCancelled = null)
         {
             var idParam = new SqlParameter("@MetaDataID", System.Data.SqlDbType.Int);
             idParam.Value = _metaDataID;
@@ -59,25 +49,37 @@ namespace TaskBroker.SSSB
             var errorParam = new SqlParameter("@ErrorMessage", System.Data.SqlDbType.NVarChar, 4000);
             errorParam.Value = NullableHelper.DBNullConvertFrom(error);
 
+            if (error != null)
+            {
+                return CompletionResult.Error;
+            }
+
+            if (isCancelled == true)
+            {
+                return CompletionResult.Cancelled;
+            }
+
             await this.SSSBDb.Database.ExecuteSqlCommandAsync("EXEC [PPS].[sp_SetCompleted] @MetaDataID, @Result, @isCanceled,  @ErrorMessage", new object[] { idParam, resultParam, cancelledParam, errorParam });
+            MetaData metaData = await GetMetaData(CancellationToken.None);
+            return IsAllTasksCompleted(metaData);
         }
 
-        public Task SetCancelled()
+        public Task<CompletionResult> SetCancelled()
         {
             return _SetCompleted(null, null, true);
         }
 
-        public Task SetCompleted()
+        public Task<CompletionResult> SetCompleted()
         {
             return _SetCompleted();
         }
         
-        public Task SetCompletedWithError(string error)
+        public Task<CompletionResult> SetCompletedWithError(string error)
         {
             return _SetCompleted(error);
         }
 
-        public Task SetCompletedWithResult(string result)
+        public Task<CompletionResult> SetCompletedWithResult(string result)
         {
             return _SetCompleted(null, result);
         }
@@ -85,11 +87,6 @@ namespace TaskBroker.SSSB
         public int MetaDataID
         {
             get { return _metaDataID; }
-        }
-
-        public MetaData MetaData
-        {
-            get { return _metaData; }
         }
     }
 }

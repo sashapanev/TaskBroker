@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Shared.Errors;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -135,9 +136,15 @@ namespace TaskCoordinator.SSSB
             {
                 throw;
             }
+            catch (PPSException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new Exception(string.Format("ReadMessages error on queue: {0}, isPrimaryListener: {1}", this._service.QueueName, isPrimaryReader), ex);
+                var exception = new PPSException(string.Format("ReadMessages error on queue: {0}, isPrimaryListener: {1}", this._service.QueueName, isPrimaryReader), ex);
+                Log.LogError(ErrorHelper.GetFullMessage(exception));
+                throw exception;
             }
             finally
             {

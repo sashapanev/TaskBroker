@@ -110,6 +110,10 @@ namespace TaskCoordinator.Callbacks
                         {
                             this._callback.JobCancelled();
                         }
+                        catch (PPSException)
+                        {
+                            // Already Logged
+                        }
                         catch (Exception ex)
                         {
                             if (!(ex is OperationCanceledException))
@@ -147,6 +151,10 @@ namespace TaskCoordinator.Callbacks
                         try
                         {
                             this._callback.JobCompleted(error);
+                        }
+                        catch (PPSException)
+                        {
+                            // Already Logged
                         }
                         catch (Exception ex)
                         {

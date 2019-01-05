@@ -141,7 +141,10 @@ namespace TaskCoordinator.SSSB
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogCritical(ErrorHelper.GetFullMessage(ex));
+                    if (!(ex is PPSException))
+                    {
+                        Logger.LogCritical(ErrorHelper.GetFullMessage(ex));
+                    }
                     this._stopStartingSource.Cancel();
                     this._isStopped = true;
                     this._stopStartingSource = null;
@@ -172,6 +175,10 @@ namespace TaskCoordinator.SSSB
             catch (OperationCanceledException)
             {
                 //NOOP
+            }
+            catch (PPSException)
+            {
+                // Already Logged
             }
             catch (Exception ex)
             {

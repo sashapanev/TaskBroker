@@ -38,18 +38,18 @@ namespace TaskCoordinator.SSSB
             {
                 int result = await _manager.SendMessageWithInitiatorConversationGroup(dbconnection, SUBSCRIBER_SERVICE_NAME, PUBLISHER_SERVICE_NAME, PUBLISH_SUBSCRIBE_CONTRACT_NAME,
                     (int)lifetime.TotalSeconds, false, initiatorConversationGroupID, messageType, msg, endDialog);
+                return result;
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg, _logger);
             }
             catch (Exception ex)
             {
                 throw new Exception(ServiceBrokerResources.SendMessageErrMsg, ex);
             }
 
-            return 0;
+            return -1;
         }
 
         public Task<int> Subscribe(SqlConnection dbconnection, TimeSpan lifetime, Guid initiatorConversationGroupID, string topic)

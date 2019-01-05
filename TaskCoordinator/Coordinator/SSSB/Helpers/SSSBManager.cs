@@ -63,7 +63,7 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
                 return null;
             }
         }
@@ -83,6 +83,11 @@ namespace TaskCoordinator.SSSB
                     command.CommandText = "SSSB.EndConversation";
                     command.CommandType = CommandType.StoredProcedure;
 
+                    if (!string.IsNullOrEmpty(errorDescription) && !errorCode.HasValue)
+                    {
+                        errorCode = 1;
+                    }
+
                     command.Parameters.Add(new SqlParameter("@RETURN_VALUE", SqlDbType.Int, 0, ParameterDirection.ReturnValue, true, 0, 0, "RETURN_VALUE", DataRowVersion.Current, null));
                     command.Parameters.Add(new SqlParameter("@conversationHandle", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "conversationHandle", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(conversationHandle)));
                     command.Parameters.Add(new SqlParameter("@withCleanup", SqlDbType.Bit, 0, ParameterDirection.Input, true, 0, 0, "withCleanup", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(withCleanup)));
@@ -96,8 +101,8 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                return -1;
             }
         }
 
@@ -128,8 +133,8 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                return -1;
             }
         }
 
@@ -171,8 +176,8 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                return -1;
             }
         }
 
@@ -229,8 +234,8 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                return -1;
             }
         }
 
@@ -259,8 +264,8 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                return -1;
             }
         }
 
@@ -295,7 +300,7 @@ namespace TaskCoordinator.SSSB
             catch (SqlException ex)
             {
                 cancellation.ThrowIfCancellationRequested();
-                DBWrapperExceptionsHelper.ThrowError(ex);
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
             }
             return null;
         }
@@ -327,7 +332,7 @@ namespace TaskCoordinator.SSSB
             catch (SqlException ex)
             {
                 cancellation.ThrowIfCancellationRequested();
-                DBWrapperExceptionsHelper.ThrowError(ex);
+                DBWrapperExceptionsHelper.ThrowError(ex, _log);
             }
             return null;
         }
@@ -364,8 +369,8 @@ namespace TaskCoordinator.SSSB
                 }
                 catch (SqlException ex)
                 {
-                    DBWrapperExceptionsHelper.ThrowError(ex);
-                    throw;
+                    DBWrapperExceptionsHelper.ThrowError(ex, _log);
+                    return null;
                 }
             }
         }
@@ -408,7 +413,7 @@ namespace TaskCoordinator.SSSB
                 }
                 catch (SqlException ex)
                 {
-                    DBWrapperExceptionsHelper.ThrowError(ex);
+                    DBWrapperExceptionsHelper.ThrowError(ex, _log);
                     return false;
                 }
             }
@@ -432,7 +437,7 @@ namespace TaskCoordinator.SSSB
                 }
                 catch (SqlException ex)
                 {
-                    DBWrapperExceptionsHelper.ThrowError(ex);
+                    DBWrapperExceptionsHelper.ThrowError(ex, _log);
                     return;
                 }
             }

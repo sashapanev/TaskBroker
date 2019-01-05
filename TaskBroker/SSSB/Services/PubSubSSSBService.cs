@@ -104,11 +104,16 @@ namespace TaskBroker.SSSB.Services
             {
                 _IsStopNeeded = false;
             }
+            catch (PPSException)
+            {
+                _IsStopNeeded = false;
+                throw;
+            }
             catch (Exception ex)
             {
                 _IsStopNeeded = false;
                 _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                throw;
+                throw new PPSException(ex);
             }
         }
 
@@ -170,10 +175,14 @@ namespace TaskBroker.SSSB.Services
             {
                 // NOOP
             }
+            catch (PPSException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                throw;
+                throw new PPSException(ex);
             }
             finally
             {

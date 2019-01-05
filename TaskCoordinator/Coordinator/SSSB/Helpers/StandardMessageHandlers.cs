@@ -73,7 +73,7 @@ namespace TaskCoordinator.SSSB
         /// Завершение диалога с отправкой сообщения об ошибке
         /// </summary>
         /// <param name="receivedMessage"></param>
-        public Task EndDialogMessageWithErrorHandler(SqlConnection dbconnection, SSSBMessage receivedMessage, string message, int? errorNumber)
+        public Task EndDialogMessageWithErrorHandler(SqlConnection dbconnection, SSSBMessage receivedMessage, string message, int errorNumber)
         {
             return _serviceBrokerHelper.EndConversationWithError(dbconnection, receivedMessage.ConversationHandle.Value, errorNumber, message);
         }

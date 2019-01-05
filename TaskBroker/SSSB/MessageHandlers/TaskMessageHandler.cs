@@ -45,10 +45,15 @@ namespace TaskBroker.SSSB
                 args.TaskCompletionSource.TrySetCanceled(args.Token);
                 return args;
             }
-            catch (Exception ex)
+            catch (PPSException ex)
             {
                 args.TaskCompletionSource.TrySetException(ex);
+                return args;
+            }
+            catch (Exception ex)
+            {
                 this._logger.LogError(ErrorHelper.GetFullMessage(ex));
+                args.TaskCompletionSource.TrySetException(new PPSException(ex));
                 return args;
             }
 
@@ -65,12 +70,14 @@ namespace TaskBroker.SSSB
             {
                 args.TaskCompletionSource.TrySetCanceled(args.Token);
             }
+            catch (PPSException ex)
+            {
+                args.TaskCompletionSource.TrySetException(ex);
+            }
             catch (Exception ex)
             {
-                if (!args.TaskCompletionSource.TrySetException(ex))
-                {
-                    _logger.LogCritical(ErrorHelper.GetFullMessage(ex));
-                }
+                _logger.LogCritical(ErrorHelper.GetFullMessage(ex));
+                args.TaskCompletionSource.TrySetException(new PPSException(ex));
             }
 
             return args;
@@ -97,12 +104,14 @@ namespace TaskBroker.SSSB
             {
                 args.TaskCompletionSource.TrySetCanceled(args.Token);
             }
+            catch (PPSException ex)
+            {
+                args.TaskCompletionSource.TrySetException(ex);
+            }
             catch (Exception ex)
             {
-                if (!args.TaskCompletionSource.TrySetException(ex))
-                {
-                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                }
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                args.TaskCompletionSource.TrySetException(new PPSException(ex));
             }
         }
 
@@ -133,12 +142,14 @@ namespace TaskBroker.SSSB
                 {
                     serviceArgs.TaskCompletionSource.TrySetCanceled(serviceArgs.Token);
                 }
+                catch (PPSException ex)
+                {
+                    serviceArgs.TaskCompletionSource.TrySetException(ex);
+                }
                 catch (Exception ex)
                 {
-                    if (!serviceArgs.TaskCompletionSource.TrySetException(ex))
-                    {
-                        _logger.LogError(ErrorHelper.GetFullMessage(ex));
-                    }
+                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                    serviceArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
                 }
             }, TaskContinuationOptions.ExecuteSynchronously);
         }

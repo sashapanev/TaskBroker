@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Shared.Errors;
 using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -52,23 +53,24 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.BeginDialogConversationErrMsg);
-                return Guid.Empty;
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.BeginDialogConversationErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.BeginDialogConversationErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.BeginDialogConversationErrMsg, ex);
             }
-		}
-		
-		/// <summary>
-		/// Завершение диалога
-		/// </summary>
-		/// <param name="conversationHandle"></param>
-		/// <param name="withCleanup"></param>
-		/// <param name="errorCode"></param>
-		/// <param name="errorDescription"></param>
-		private async Task EndConversation(SqlConnection dbconnection, Guid conversationHandle, bool withCleanup, int? errorCode, string errorDescription)
+            return Guid.Empty;
+        }
+
+        /// <summary>
+        /// Завершение диалога
+        /// </summary>
+        /// <param name="conversationHandle"></param>
+        /// <param name="withCleanup"></param>
+        /// <param name="errorCode"></param>
+        /// <param name="errorDescription"></param>
+        private async Task EndConversation(SqlConnection dbconnection, Guid conversationHandle, bool withCleanup, int? errorCode, string errorDescription)
 		{
             Debug("Выполнение метода EndConversation(conversationHandle, withCleanup, errorCode, errorDescription)");
 			try
@@ -77,11 +79,12 @@ namespace TaskCoordinator.SSSB
             }
             catch(SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.EndConversationErrMsg);
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.EndConversationErrMsg, _logger);
             }
 			catch (Exception ex)
 			{
-				throw new Exception(ServiceBrokerResources.EndConversationErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.EndConversationErrMsg, ex);
 			}
 		}
 
@@ -94,16 +97,16 @@ namespace TaskCoordinator.SSSB
             Debug("Выполнение метода SendStepCompletedMessage");
             try
             {
-
                 await _manager.SendMessage(dbconnection, conversationHandle, SSSBMessage.PPS_StepCompleteMessageType, new byte[0]);
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg);
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.SendMessageErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.SendMessageErrMsg, ex);
             }
         }
 
@@ -116,16 +119,16 @@ namespace TaskCoordinator.SSSB
             Debug("Выполнение метода SendEmptyMessage");
             try
             {
-
                 await _manager.SendMessage(dbconnection, conversationHandle, SSSBMessage.PPS_EmptyMessageType, new byte[0]);
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg);
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.SendMessageErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.SendMessageErrMsg, ex);
             }
         }
 
@@ -153,7 +156,7 @@ namespace TaskCoordinator.SSSB
 		/// <param name="conversationHandle"></param>
 		/// <param name="errorCode"></param>
 		/// <param name="errorDescription"></param>
-		public Task EndConversationWithError(SqlConnection dbconnection, Guid conversationHandle, int? errorCode, string errorDescription)
+		public Task EndConversationWithError(SqlConnection dbconnection, Guid conversationHandle, int errorCode, string errorDescription)
 		{
 			return EndConversation(dbconnection, conversationHandle, false, errorCode, errorDescription);
 		}
@@ -167,16 +170,16 @@ namespace TaskCoordinator.SSSB
             Debug("Выполнение метода SendMessage(message)");
 			try
 			{
-
                 await _manager.SendMessage(dbconnection, message.ConversationHandle, message.MessageType, message.Body);
 			}
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg);
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.SendMessageErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.SendMessageErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.SendMessageErrMsg, ex);
             }
 		}
 
@@ -200,13 +203,14 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.PendingMessageErrMsg);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.PendingMessageErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.PendingMessageErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.PendingMessageErrMsg, ex);
             }
+            return null;
 		}
 
         public async Task<int> ProcessPendingMessages(SqlConnection dbconnection, bool processAll= false, string objectID= null)
@@ -218,13 +222,14 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.ProcessMessagesErrMsg);
-                return 0;
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.ProcessMessagesErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.ProcessMessagesErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.ProcessMessagesErrMsg, ex);
             }
+            return -1;
         }
 
         /// <summary>
@@ -241,13 +246,14 @@ namespace TaskCoordinator.SSSB
             }
             catch (SqlException ex)
             {
-                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.GetServiceQueueNameErrMsg);
-                return null;
+                DBWrapperExceptionsHelper.ThrowError(ex, ServiceBrokerResources.GetServiceQueueNameErrMsg, _logger);
             }
             catch (Exception ex)
             {
-                throw new Exception(ServiceBrokerResources.GetServiceQueueNameErrMsg, ex);
+                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                throw new PPSException(ServiceBrokerResources.GetServiceQueueNameErrMsg, ex);
             }
+            return null;
 		}
 	}
 }
