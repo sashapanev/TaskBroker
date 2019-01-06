@@ -39,7 +39,8 @@ namespace TaskBroker.SSSB.Executors
             {
                 Interlocked.Increment(ref _counter);
                 this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} Guid: {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContext ));
-                return Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), Guid.Parse(_clientContext));
+                Guid initiatorConversationGroup = Guid.Parse(_clientContext);
+                return Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), initiatorConversationGroup);
             }
             else
             {

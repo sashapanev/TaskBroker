@@ -198,7 +198,21 @@ namespace TaskCoordinator.SSSB.Utils
             Debug("Выполнение метода SendPendingMessage(..)");
 			try
 			{
-                long? pendingMessageID = await _manager.SendPendingMessage(dbconnection, objectID, activationTime, fromService, message.ServiceName, message.ContractName, (int)lifetime.TotalSeconds, isWithEncryption, message.ConversationGroupID, message.ConversationHandle, message.Body, message.MessageType, initiatorConversationGroupID, isOneWay);
+                long? pendingMessageID = await _manager.SendPendingMessage(
+                    dbconnection, 
+                    objectID, 
+                    activationTime, 
+                    fromService, 
+                    message.ServiceName,
+                    message.ContractName, 
+                    (int)lifetime.TotalSeconds, 
+                    isWithEncryption, 
+                    null, 
+                    null, 
+                    message.Body, 
+                    message.MessageType, 
+                    initiatorConversationGroupID, 
+                    isOneWay);
                 return pendingMessageID;
             }
             catch (SqlException ex)

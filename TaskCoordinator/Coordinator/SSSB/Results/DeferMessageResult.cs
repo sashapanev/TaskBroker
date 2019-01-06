@@ -41,7 +41,11 @@ namespace TaskCoordinator.SSSB
 
         public override Task Execute(SqlConnection dbconnection, SSSBMessage message, CancellationToken token)
         {
-            Guid? conversationGroupID = message.ConversationGroupID;
+            // first, close current dialog (so it won't become abandoned)
+            if (!_initiatorConversationGroupID.HasValue)
+            {
+                _serviceBrokerHelper.EndConversation(dbconnection, message.ConversationHandle.Value);
+            }
             return _serviceBrokerHelper.SendPendingMessage(dbconnection,_fromService, message, _lifeTime, false, _initiatorConversationGroupID, _activationTime, null, _isOneWay);
         }
     }

@@ -67,11 +67,12 @@ namespace TaskBroker
                 {
                     logBuilder.ClearProviders();
                     logBuilder.AddConsole();
+                    /*
                     logBuilder.AddFile(opts =>
                     {
                         context.Configuration.GetSection("FileLoggingOptions").Bind(opts);
                     });
-
+                    */
                     /*
                     logBuilder.AddFile(opts =>
                     {
