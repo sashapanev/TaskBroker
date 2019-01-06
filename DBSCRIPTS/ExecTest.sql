@@ -11,7 +11,6 @@ SET @BatchID=1;
 SET @category='category';
 SET @infoType='test';
 SET @context= NEWID();
--- TODO: задайте здесь значения параметров.
 
 EXECUTE @RC = [dbo].[sp_SendTest] 
    @BatchID

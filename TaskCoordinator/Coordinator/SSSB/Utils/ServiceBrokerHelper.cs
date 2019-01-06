@@ -42,7 +42,7 @@ namespace TaskCoordinator.SSSB.Utils
         public async Task<Guid> BeginDialogConversation(SqlConnection dbconnection, string fromService, string toService, string contractName, 
 			TimeSpan lifetime, bool withEncryption,	Guid? relatedConversationHandle, Guid? relatedConversationGroupID)
 		{
-			Debug("Выполнение метода BeginDialogConversation(fromService, toService, contractName, lifetime, withEncryption, relatedConversationID, relatedConversationGroupID)");
+			Debug("Executing method BeginDialogConversation(fromService, toService, contractName, lifetime, withEncryption, relatedConversationID, relatedConversationGroupID)");
 			try
 			{
                 Guid? conversationHandle = await _manager.BeginDialogConversation(dbconnection, fromService, toService, contractName,
@@ -72,7 +72,7 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="errorDescription"></param>
         private async Task EndConversation(SqlConnection dbconnection, Guid conversationHandle, bool withCleanup, int? errorCode, string errorDescription)
 		{
-            Debug($"Выполнение метода EndConversation(conversationHandle: {conversationHandle}, withCleanup: {withCleanup}, errorCode: {errorCode}, errorDescription)");
+            Debug($"Executing method EndConversation(conversationHandle: {conversationHandle}, withCleanup: {withCleanup}, errorCode: {errorCode}, errorDescription: {errorDescription})");
 			try
 			{
                 await _manager.EndConversation(dbconnection, conversationHandle, withCleanup, errorCode, errorDescription);
@@ -94,7 +94,7 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="conversationHandle"></param>
         public async Task SendStepCompletedMessage(SqlConnection dbconnection, Guid conversationHandle)
         {
-            Debug("Выполнение метода SendStepCompletedMessage");
+            Debug($"Executing method SendStepCompletedMessage, conversationHandle: {conversationHandle}");
             try
             {
                 await _manager.SendMessage(dbconnection, conversationHandle, SSSBMessage.PPS_StepCompleteMessageType, new byte[0]);
@@ -116,7 +116,7 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="conversationHandle"></param>
         public async Task SendEmptyMessage(SqlConnection dbconnection, Guid conversationHandle)
         {
-            Debug("Выполнение метода SendEmptyMessage");
+            Debug($"Executing method SendEmptyMessage, conversationHandle: {conversationHandle}");
             try
             {
                 await _manager.SendMessage(dbconnection, conversationHandle, SSSBMessage.PPS_EmptyMessageType, new byte[0]);
@@ -167,7 +167,7 @@ namespace TaskCoordinator.SSSB.Utils
 		/// <param name="message"></param>
 		public async Task SendMessage(SqlConnection dbconnection, SSSBMessage message)
 		{
-            Debug("Выполнение метода SendMessage(message)");
+            Debug($"Executing method SendMessage({message.MessageType}: {message.ConversationHandle})");
 			try
 			{
                 await _manager.SendMessage(dbconnection, message.ConversationHandle, message.MessageType, message.Body);
@@ -195,7 +195,7 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="objectID"></param>
         public async Task<long?> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID, bool isOneWay = true)
 		{
-            Debug("Выполнение метода SendPendingMessage(..)");
+            Debug($"Executing method SendPendingMessage(ConversationHandle: {message.ConversationHandle}, fromService: {fromService}, initiatorConversationGroupID: {initiatorConversationGroupID}, activationTime: {activationTime: dd.MM.yyyy HH:mm:ss}");
 			try
 			{
                 long? pendingMessageID = await _manager.SendPendingMessage(
@@ -229,7 +229,7 @@ namespace TaskCoordinator.SSSB.Utils
 
         public async Task<int> ProcessPendingMessages(SqlConnection dbconnection, bool processAll= false, string objectID= null)
         {
-            Debug("Выполнение метода ProcessPendingMessage(..)");
+            Debug("Executing method ProcessPendingMessage(..)");
             try
             {
                 return await _manager.ProcessPendingMessages(dbconnection, processAll, objectID);
@@ -253,7 +253,7 @@ namespace TaskCoordinator.SSSB.Utils
         /// <returns></returns>
         public async Task<string> GetServiceQueueName(string serviceName)
 		{
-            Debug("Выполнение метода GetServiceQueueName(serviceName)");
+            Debug($"Executing method GetServiceQueueName({serviceName})");
 			try
 			{
                 return await _manager.GetServiceQueueName(serviceName).ConfigureAwait(false);

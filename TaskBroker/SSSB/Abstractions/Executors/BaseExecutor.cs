@@ -134,20 +134,20 @@ namespace TaskBroker.SSSB.Executors
             return res;
         }
 
-        public HandleMessageResult StepCompleted(bool isFinal = false)
+        public HandleMessageResult StepCompleted()
         {
-            if (isFinal)
-                return (HandleMessageResult)this.Services.GetRequiredService<FinalStepCompleteMessageResult>();
-            else
-                return (HandleMessageResult)this.Services.GetRequiredService<StepCompleteMessageResult>();
+              return (HandleMessageResult)this.Services.GetRequiredService<StepCompleteMessageResult>();
         }
 
-        public HandleMessageResult EmptyMessage(bool isFinal = false)
+        public HandleMessageResult EmptyMessage()
         {
-            if (isFinal)
-                return (HandleMessageResult)this.Services.GetRequiredService<FinalEmptyMessageResult>();
-            else
-                return (HandleMessageResult)this.Services.GetRequiredService<EmptyMessageResult>();
+              return (HandleMessageResult)this.Services.GetRequiredService<EmptyMessageResult>();
+        }
+
+        public HandleMessageResult CombinedResult(params HandleMessageResult[] resultHandlers)
+        {
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<CombinedMessageResult>(this.Services, new object[] { resultHandlers });
+            return res;
         }
         #endregion
 

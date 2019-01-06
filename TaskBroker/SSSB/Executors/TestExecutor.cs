@@ -40,7 +40,10 @@ namespace TaskBroker.SSSB.Executors
                 Interlocked.Increment(ref _counter);
                 this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} Guid: {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContext ));
                 Guid initiatorConversationGroup = Guid.Parse(_clientContext);
-                return Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), initiatorConversationGroup);
+                // Execute on the same conversation
+                // return Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), initiatorConversationGroup);
+                // Execute on a new conversation: first execute EndDialog and then Defer
+                return CombinedResult(EndDialog(), Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), null));
             }
             else
             {

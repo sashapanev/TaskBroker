@@ -21,8 +21,6 @@ namespace TaskCoordinator.SSSB
             services.TryAddSingleton<EndDialogMessageResult>();
             services.TryAddSingleton<StepCompleteMessageResult>();
             services.TryAddSingleton<EmptyMessageResult>();
-            services.TryAddSingleton<FinalStepCompleteMessageResult>();
-            services.TryAddSingleton<FinalEmptyMessageResult>();
         }
     }
 }
