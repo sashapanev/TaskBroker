@@ -27,7 +27,21 @@ namespace TaskCoordinator.SSSB
                String messageType,
                byte[] body,
                bool? withEndDialog = null);
-        Task<long?> SendPendingMessage(SqlConnection dbconnection, string objectID, DateTime? activationDate, string fromService, string toService, string contractName, int? lifeTime, bool? isWithEncryption, Guid? relatedConversationGroupID, Guid? relatedConversationHandle, byte[] messageBody, string messageType, Guid? initiatorConversationGroupID);
+        Task<long?> SendPendingMessage(
+            SqlConnection dbconnection,
+            string objectID, 
+            DateTime? activationDate, 
+            string fromService, 
+            string toService, 
+            string contractName, 
+            int? lifeTime, 
+            bool? isWithEncryption, 
+            Guid? relatedConversationGroupID, 
+            Guid? relatedConversationHandle, 
+            byte[] messageBody, 
+            string messageType, 
+            Guid? initiatorConversationGroupID, 
+            bool isOneWay = true);
         Task<int> ProcessPendingMessages(SqlConnection dbconnection, bool processAll = false, String objectID = null);
     }
 }

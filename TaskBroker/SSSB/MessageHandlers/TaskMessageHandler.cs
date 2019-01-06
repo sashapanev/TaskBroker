@@ -90,7 +90,7 @@ namespace TaskBroker.SSSB
                 var executor = (IExecutor)ActivatorUtilities.CreateInstance(args.Services, executorArgs.TaskInfo.ExecutorType, new object[] { executorArgs });
                 executorArgs.TasksManager.CurrentExecutor = executor;
                 Task<HandleMessageResult> execResTask = executor.ExecuteTaskAsync(args.Token);
-                if (executor.IsLongRunning && !execResTask.IsCompleted)
+                if (executor.IsAsyncProcessing && !execResTask.IsCompleted)
                 {
                     this.ExecuteLongRun(execResTask, executorArgs, args);
                 }

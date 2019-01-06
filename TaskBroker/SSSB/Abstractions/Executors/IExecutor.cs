@@ -17,7 +17,7 @@ namespace TaskBroker.SSSB.Executors
             get;
         }
 
-        bool IsLongRunning
+        bool IsAsyncProcessing
         {
             get;
         }

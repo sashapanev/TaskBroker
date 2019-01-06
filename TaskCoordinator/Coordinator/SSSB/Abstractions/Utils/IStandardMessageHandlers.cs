@@ -1,7 +1,7 @@
 ﻿using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator.SSSB
+namespace TaskCoordinator.SSSB.Utils
 {
     public interface IStandardMessageHandlers
     {

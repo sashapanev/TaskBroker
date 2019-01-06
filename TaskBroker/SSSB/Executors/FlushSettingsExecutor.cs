@@ -19,7 +19,7 @@ namespace TaskBroker.SSSB.Executors
             _scheduleManager = scheduleManager;
         }
 
-        public override bool IsLongRunning
+        public override bool IsAsyncProcessing
         {
             get
             {

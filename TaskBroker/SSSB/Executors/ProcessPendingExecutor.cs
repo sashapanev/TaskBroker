@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using TaskCoordinator.Database;
 using TaskCoordinator.SSSB;
+using TaskCoordinator.SSSB.Utils;
 
 namespace TaskBroker.SSSB.Executors
 {
@@ -22,7 +23,7 @@ namespace TaskBroker.SSSB.Executors
             _objectID = null;
         }
 
-        public override bool IsLongRunning
+        public override bool IsAsyncProcessing
         {
             get
             {
@@ -42,6 +43,7 @@ namespace TaskBroker.SSSB.Executors
             using (var connection = await connectionManager.CreateSSSBConnectionAsync(CancellationToken.None))
             {
                 await _issbHelper.ProcessPendingMessages(connection, _processAll, _objectID);
+                transactionScope.Complete();
             }
 
             return EndDialog();

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using TaskCoordinator.Database;
 
-namespace TaskCoordinator.SSSB
+namespace TaskCoordinator.SSSB.Utils
 {
     /// <summary>
     /// Вспомогательный класс для работы с SQL Service Broker.
@@ -72,7 +72,7 @@ namespace TaskCoordinator.SSSB
         /// <param name="errorDescription"></param>
         private async Task EndConversation(SqlConnection dbconnection, Guid conversationHandle, bool withCleanup, int? errorCode, string errorDescription)
 		{
-            Debug("Выполнение метода EndConversation(conversationHandle, withCleanup, errorCode, errorDescription)");
+            Debug($"Выполнение метода EndConversation(conversationHandle: {conversationHandle}, withCleanup: {withCleanup}, errorCode: {errorCode}, errorDescription)");
 			try
 			{
                 await _manager.EndConversation(dbconnection, conversationHandle, withCleanup, errorCode, errorDescription);
@@ -193,12 +193,12 @@ namespace TaskCoordinator.SSSB
         /// <param name="isWithEncryption"></param>
         /// <param name="activationTime"></param>
         /// <param name="objectID"></param>
-        public async Task<long?> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID)
+        public async Task<long?> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID, bool isOneWay = true)
 		{
             Debug("Выполнение метода SendPendingMessage(..)");
 			try
 			{
-                long? pendingMessageID = await _manager.SendPendingMessage(dbconnection, objectID, activationTime, fromService, message.ServiceName, message.ContractName, (int)lifetime.TotalSeconds, isWithEncryption, message.ConversationGroupID, message.ConversationHandle, message.Body, message.MessageType, initiatorConversationGroupID);
+                long? pendingMessageID = await _manager.SendPendingMessage(dbconnection, objectID, activationTime, fromService, message.ServiceName, message.ContractName, (int)lifetime.TotalSeconds, isWithEncryption, message.ConversationGroupID, message.ConversationHandle, message.Body, message.MessageType, initiatorConversationGroupID, isOneWay);
                 return pendingMessageID;
             }
             catch (SqlException ex)

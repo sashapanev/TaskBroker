@@ -195,7 +195,8 @@ namespace TaskCoordinator.SSSB
                 Guid? relatedConversationHandle,
                 byte[] messageBody,
                 String messageType,
-                Guid? initiatorConversationGroupID
+                Guid? initiatorConversationGroupID,
+                bool isOneWay = true
                 )
         {
             long? pendingMessageID = null;
@@ -220,6 +221,7 @@ namespace TaskCoordinator.SSSB
                     command.Parameters.Add(new SqlParameter("@messageBody", SqlDbType.VarBinary, -1, ParameterDirection.Input, true, 0, 0, "messageBody", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(messageBody)));
                     command.Parameters.Add(new SqlParameter("@messageType", SqlDbType.NVarChar, 255, ParameterDirection.Input, true, 0, 0, "messageType", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(messageType)));
                     command.Parameters.Add(new SqlParameter("@initiatorConversationGroupID", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "initiatorConversationGroupID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(initiatorConversationGroupID)));
+                    command.Parameters.Add(new SqlParameter("@isOneWay", SqlDbType.Bit, 0, ParameterDirection.Input, false, 0, 0, "isOneWay", DataRowVersion.Current, isOneWay));
                     command.Parameters.Add(new SqlParameter("@pendingMessageID", SqlDbType.BigInt, 0, ParameterDirection.InputOutput, true, 0, 0, "pendingMessageID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(pendingMessageID)));
 
                     await command.ExecuteNonQueryAsync();
@@ -254,7 +256,7 @@ namespace TaskCoordinator.SSSB
                     command.CommandType = CommandType.StoredProcedure;
 
                     command.Parameters.Add(new SqlParameter("@RETURN_VALUE", SqlDbType.Int, 0, ParameterDirection.ReturnValue, true, 0, 0, "RETURN_VALUE", DataRowVersion.Current, null));
-                    command.Parameters.Add(new SqlParameter("@ProccessALL", SqlDbType.Bit, 0, ParameterDirection.Input, true, 0, 0, "ProccessALL", DataRowVersion.Current, processAll));
+                    command.Parameters.Add(new SqlParameter("@ProccessALL", SqlDbType.Bit, 0, ParameterDirection.Input, false, 0, 0, "ProccessALL", DataRowVersion.Current, processAll));
                     command.Parameters.Add(new SqlParameter("@ObjectID", SqlDbType.VarChar, 50, ParameterDirection.Input, true, 0, 0, "ObjectID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(objectID)));
 
                     await command.ExecuteNonQueryAsync();

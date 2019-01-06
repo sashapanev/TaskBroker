@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using TaskCoordinator.Database;
 
-namespace TaskCoordinator.SSSB
+namespace TaskCoordinator.SSSB.Utils
 {
     public class PubSubHelper : IPubSubHelper
     {

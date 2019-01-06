@@ -60,7 +60,14 @@ namespace TaskBroker.SSSB.Executors
             }
         }
 
-        public virtual bool IsLongRunning
+        /// <summary>
+        /// Determines if the message is processed after
+        /// the message is read from the queue and transaction commited
+        /// The Other Messages from the Queue on the same Dialog can be read
+        /// and processed out of sync from the current message processing!!!
+        /// Useful only if the processing of the message taskes long time.
+        /// </summary>
+        public virtual bool IsAsyncProcessing
         {
             get
             {
@@ -109,6 +116,21 @@ namespace TaskBroker.SSSB.Executors
         public HandleMessageResult EndDialog()
         {
             var res = (HandleMessageResult)this.Services.GetRequiredService<EndDialogMessageResult>();
+            return res;
+        }
+
+        public HandleMessageResult Defer(string fromService, DateTime activationTime, Guid? initiatorConversationGroupID = null, TimeSpan? lifeTime = null)
+        {
+            if (string.IsNullOrEmpty(fromService))
+                throw new ArgumentNullException(nameof(fromService));
+            DeferMessageResult.DeferArgs args = new DeferMessageResult.DeferArgs() {
+                IsOneWay = true,
+                fromService = fromService,
+                activationTime = activationTime,
+                initiatorConversationGroupID = initiatorConversationGroupID,
+                lifeTime = lifeTime
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<DeferMessageResult>(this.Services, new object[] { args });
             return res;
         }
 
