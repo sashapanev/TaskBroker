@@ -33,11 +33,11 @@ namespace TaskCoordinator.SSSB.Utils
                 new XAttribute("subscriberId", initiatorConversationGroupID),
                 new XElement("topic", topic)
             );
-            byte[] msg = Encoding.Unicode.GetBytes(xmessage.ToString());
+            byte[] body = xmessage.ConvertToBytes();
             try
             {
                 int result = await _manager.SendMessageWithInitiatorConversationGroup(dbconnection, SUBSCRIBER_SERVICE_NAME, PUBLISHER_SERVICE_NAME, PUBLISH_SUBSCRIBE_CONTRACT_NAME,
-                    (int)lifetime.TotalSeconds, false, initiatorConversationGroupID, messageType, msg, endDialog);
+                    (int)lifetime.TotalSeconds, false, initiatorConversationGroupID, messageType, body, endDialog);
                 return result;
             }
             catch (SqlException ex)

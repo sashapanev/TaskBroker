@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Specialized;
-using TaskCoordinator.SSSB;
+﻿using TaskCoordinator.SSSB;
 
 namespace TaskBroker.SSSB
 {
     public class ExecutorArgs
     {
-        public ExecutorArgs(OnDemandTaskManager tasksManager, TaskInfo taskInfo, DateTime eventDate, NameValueCollection parameters, bool isMultiStepTask, ServiceMessageEventArgs serviceMessageEventArgs)
+        public ExecutorArgs(OnDemandTaskManager tasksManager, TaskInfo taskInfo, SSSBMessage message, MessageAtributes messageAtributes)
         {
             this.TasksManager = tasksManager;
             this.TaskInfo = taskInfo;
-            this.EventDate = eventDate;
-            this.Parameters = parameters;
-            this.IsMultiStepTask = isMultiStepTask;
-            this.Message = serviceMessageEventArgs.Message;
+            this.Message = message;
+            this.Atributes = messageAtributes;
         }
+
         public OnDemandTaskManager TasksManager { get; }
         public TaskInfo TaskInfo { get; }
-        public DateTime EventDate { get; }
-        public NameValueCollection Parameters { get; }
-        public bool IsMultiStepTask { get; }
+        public MessageAtributes Atributes { get; }
         public SSSBMessage Message { get; }
     }
 }

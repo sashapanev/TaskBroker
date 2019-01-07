@@ -24,11 +24,10 @@ namespace TaskBroker.SSSB.Executors
             Type loggerType = typeof(ILogger<>);
             this.Logger = (ILogger)args.TasksManager.Services.GetRequiredService(loggerType.MakeGenericType(this.GetType()));
             this.Message = args.Message;
-            this.ConversationHandle = args.Message.ConversationHandle;
             this.TasksManager = args.TasksManager;
             this.TaskInfo = args.TaskInfo;
-            this.EventDate = args.EventDate;
-            this.Parameters = args.Parameters;
+            this.EventDate = args.Atributes.EventDate;
+            this.Parameters = args.Atributes.Parameters;
         }
 
         protected ILogger Logger { get; }
@@ -37,7 +36,21 @@ namespace TaskBroker.SSSB.Executors
        
         public SSSBMessage Message { get; }
 
-        public Guid ConversationHandle { get; }
+        public Guid ConversationHandle
+        {
+            get
+            {
+                return this.Message.ConversationHandle;
+            }
+        }
+
+        public Guid ConversationGroupID
+        {
+            get
+            {
+                return this.Message.ConversationGroupID;
+            }
+        }
 
         public virtual string Name
         {
@@ -86,84 +99,13 @@ namespace TaskBroker.SSSB.Executors
         protected virtual Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
             this.Debug(string.Format("Executing SSSB Task: {0}", this.TaskInfo.OnDemandTaskID.ToString()));
-            return Task.FromResult(EndDialog());
+            return Task.FromResult(this.EndDialog());
         }
 
         protected virtual Task AfterExecuteTask(CancellationToken token)
         {
             return Task.CompletedTask;
         }
-
-        #region HandleMessage Results Helper Methods
-        public HandleMessageResult Noop()
-        {
-            var res = (HandleMessageResult)this.Services.GetRequiredService<NoopMessageResult>();
-            return res;
-        }
-
-        public HandleMessageResult EndDialogWithError(string error, int? errocode, Guid? conversationHandle = null)
-        {
-            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
-            {
-                error= error,
-                errorCode= errocode,
-                conversationHandle = conversationHandle
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this.Services, new object[] { args });
-            return res;
-        }
-
-        public HandleMessageResult EndDialog(Guid? conversationHandle = null)
-        {
-            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
-            {
-               conversationHandle= conversationHandle
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this.Services, new object[] { args });
-            return res;
-        }
-
-        public HandleMessageResult Defer(string fromService, DateTime activationTime, Guid? initiatorConversationGroupID = null, TimeSpan? lifeTime = null)
-        {
-            if (string.IsNullOrEmpty(fromService))
-                throw new ArgumentNullException(nameof(fromService));
-            DeferMessageResult.Args args = new DeferMessageResult.Args() {
-                IsOneWay = true,
-                fromService = fromService,
-                activationTime = activationTime,
-                initiatorConversationGroupID = initiatorConversationGroupID,
-                lifeTime = lifeTime
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<DeferMessageResult>(this.Services, new object[] { args });
-            return res;
-        }
-
-        public HandleMessageResult StepCompleted(Guid? conversationHandle = null)
-        {
-            StepCompleteMessageResult.Args args = new StepCompleteMessageResult.Args()
-            {
-                conversationHandle = conversationHandle
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<StepCompleteMessageResult>(this.Services, new object[] { args });
-            return res;
-        }
-
-        public HandleMessageResult EmptyMessage(Guid? conversationHandle = null)
-        {
-            EmptyMessageResult.Args args = new EmptyMessageResult.Args()
-            {
-                conversationHandle = conversationHandle
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EmptyMessageResult>(this.Services, new object[] { args });
-            return res;
-        }
-
-        public HandleMessageResult CombinedResult(params HandleMessageResult[] resultHandlers)
-        {
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<CombinedMessageResult>(this.Services, new object[] { resultHandlers });
-            return res;
-        }
-        #endregion
 
         public async Task<HandleMessageResult> ExecuteTaskAsync(CancellationToken token)
         {

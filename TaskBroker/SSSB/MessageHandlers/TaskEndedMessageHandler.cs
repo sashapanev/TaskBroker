@@ -12,12 +12,12 @@ namespace TaskBroker.SSSB
     public class TaskEndedMessageHandler : BaseMessageHandler<ServiceMessageEventArgs>
     {
         private readonly ILogger _logger;
-        private readonly IServiceProvider _rootServices;
+        private readonly IServiceProvider _services;
 
-        public TaskEndedMessageHandler(IServiceProvider rootProvider)
+        public TaskEndedMessageHandler(IServiceProvider services)
         {
-            _logger = rootProvider.GetRequiredService<ILogger<TaskEndedMessageHandler>>();
-            _rootServices = rootProvider;
+            _logger = services.GetRequiredService<ILogger<TaskEndedMessageHandler>>();
+            _services = services;
         }
 
         protected override string GetName()
@@ -25,21 +25,11 @@ namespace TaskBroker.SSSB
             return nameof(TaskEndedMessageHandler);
         }
 
-        protected HandleMessageResult EndDialog(Guid? conversationHandle = null)
-        {
-            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
-            {
-                conversationHandle = conversationHandle
-            };
-            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this._rootServices, new object[] { args });
-            return res;
-        }
-
         public override Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs args)
         {
             try
             {
-                // после выполнения задачи снова включить таймер
+                // after the task is completed, to turn on the Timer again
                 lock (ScheduleTimer.Timers)
                 {
                     Guid conversationGroup = args.Message.ConversationGroupID;
@@ -59,8 +49,9 @@ namespace TaskBroker.SSSB
             }
             finally
             {
-                args.TaskCompletionSource.SetResult(EndDialog());
+                args.TaskCompletionSource.SetResult(_services.EndDialog());
             }
+
             return Task.FromResult(args);
         }
     }

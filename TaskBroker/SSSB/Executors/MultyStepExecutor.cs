@@ -58,7 +58,7 @@ namespace TaskBroker.SSSB.Executors
 
             CompletionResult completion = await MetaDataManager.SetCompleted();
            
-            return EndDialog();
+            return this.EndDialog();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace TaskBroker.SSSB.Executors
                 transactionScope.Complete();
             }
 
-            return EndDialog();
+            return this.EndDialog();
         }
     }
 }

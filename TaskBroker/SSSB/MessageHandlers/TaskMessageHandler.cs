@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Shared.Errors;
 using System;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using TaskBroker.SSSB.Executors;
@@ -28,17 +27,13 @@ namespace TaskBroker.SSSB
 
         public override async Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs serviceMessageArgs)
         {
-            int? taskID = null;
-            bool isMultiStepTask = false;
-            DateTime eventDate = DateTime.Now;
-            XElement message_xml = null;
-            NameValueCollection parameters = null;
+            MessageAtributes messageAtributes = null;
 
             try
             {
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();
-                message_xml = GetMessageXML(serviceMessageArgs.Message.Body);
-                GetMessageAttributes(message_xml, out taskID, out isMultiStepTask, out eventDate, out parameters);
+                XElement xml = serviceMessageArgs.Message.GetMessageXML();
+                messageAtributes = xml.GetMessageAttributes();
             }
             catch (OperationCanceledException)
             {
@@ -61,9 +56,9 @@ namespace TaskBroker.SSSB
             try
             {
                 serviceMessageArgs.Token.ThrowIfCancellationRequested();
-                var task = await taskManager.GetTaskInfo(taskID.Value);
-                serviceMessageArgs.TaskID = taskID.Value;
-                var executorArgs = new ExecutorArgs(taskManager, task, eventDate, parameters, isMultiStepTask, serviceMessageArgs);
+                var task = await taskManager.GetTaskInfo(messageAtributes.TaskID.Value);
+                serviceMessageArgs.TaskID = messageAtributes.TaskID.Value;
+                var executorArgs = new ExecutorArgs(taskManager, task, serviceMessageArgs.Message, messageAtributes);
                 await ExecuteTask(executorArgs, serviceMessageArgs);
             }
             catch (OperationCanceledException)

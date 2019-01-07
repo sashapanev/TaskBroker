@@ -64,7 +64,7 @@ namespace TaskBroker.SSSB.Executors
                     break;
             }
 
-            return Noop();
+            return this.Noop();
         }
     }
 }

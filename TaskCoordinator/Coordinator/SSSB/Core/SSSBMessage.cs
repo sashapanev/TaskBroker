@@ -2,9 +2,6 @@ using System;
 
 namespace TaskCoordinator.SSSB
 {
-    /// <summary>
-    /// Тип валидации сообщения.
-    /// </summary>
     [Serializable]
 	public enum MessageValidationType
 	{
@@ -15,9 +12,6 @@ namespace TaskCoordinator.SSSB
 		XML,
 	}
 
-	/// <summary>
-	/// Сообщение
-	/// </summary>
 	[Serializable]
 	public class SSSBMessage : Message
     {
