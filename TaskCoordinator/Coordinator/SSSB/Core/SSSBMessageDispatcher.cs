@@ -247,14 +247,12 @@ namespace TaskCoordinator.SSSB
 
             ErrorMessage msgerr = null;
             bool end_dialog_with_error = false;
-            //определяем сообщение по ConversationHandle
-            if (message.ConversationHandle.HasValue)
-            {
-                // оканчивалась ли ранее обработка этого сообщения с ошибкой?
-                msgerr = _sssbService.GetError(message.ConversationHandle.Value);
-                if (msgerr != null)
-                    end_dialog_with_error = msgerr.ErrorCount >= MAX_MESSAGE_ERROR_COUNT;
-            }
+            // определяем сообщение по ConversationHandle
+            // оканчивалась ли ранее обработка этого сообщения с ошибкой?
+            msgerr = _sssbService.GetError(message.ConversationHandle);
+            if (msgerr != null)
+                end_dialog_with_error = msgerr.ErrorCount >= MAX_MESSAGE_ERROR_COUNT;
+
             if (end_dialog_with_error)
                 await this.DispatchErrorMessage(dbconnection, message, msgerr, token).ConfigureAwait(continueOnCapturedContext: false);
             else

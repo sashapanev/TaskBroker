@@ -17,19 +17,12 @@ namespace TaskBroker.SSSB.Executors
         {
         }
 
-        public override bool IsAsyncProcessing
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        protected override void BeforeExecuteTask()
+        protected override Task BeforeExecuteTask(CancellationToken token)
         {
             _category = this.Parameters["Category"];
             _batchId = this.Parameters["BatchID"];
             _clientContext = this.Parameters["ClientContext"];
+            return Task.CompletedTask;
         }
 
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
@@ -53,9 +46,10 @@ namespace TaskBroker.SSSB.Executors
             }
         }
 
-        protected override void AfterExecuteTask()
+        protected override Task AfterExecuteTask(CancellationToken token)
         {
             //Interlocked.Increment(ref _counter);
+            return Task.CompletedTask;
         }
     }
 }

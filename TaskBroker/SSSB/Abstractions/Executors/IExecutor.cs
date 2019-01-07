@@ -7,7 +7,7 @@ namespace TaskBroker.SSSB.Executors
 {
     public interface IExecutor
     {
-        Guid ID
+        Guid ConversationHandle
         {
             get;
         }

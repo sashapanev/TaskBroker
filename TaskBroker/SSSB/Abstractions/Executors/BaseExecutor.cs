@@ -18,40 +18,27 @@ namespace TaskBroker.SSSB.Executors
     public abstract class BaseExecutor: IExecutor, IDisposable
     {
         protected static readonly ConcurrentDictionary<int, Task<ExecutorSettings>> _staticSettings = new ConcurrentDictionary<int, Task<ExecutorSettings>>();
-        private readonly TaskInfo _task;
-        private readonly DateTime _eventDate;
-        private readonly OnDemandTaskManager _tasksManager;
-        private readonly NameValueCollection _parameters;
-        private readonly Guid _id = Guid.NewGuid();
-        private readonly ILogger _logger;
 
         public BaseExecutor(ExecutorArgs args)
         {
-            Type _type = typeof(ILogger<>);
-            this._logger = (ILogger)args.TasksManager.Services.GetRequiredService(_type.MakeGenericType(this.GetType()));
-            this._tasksManager = args.TasksManager;
-            this._task = args.TaskInfo;
-            this._eventDate = args.EventDate;
-            this._parameters = args.Parameters;
+            Type loggerType = typeof(ILogger<>);
+            this.Logger = (ILogger)args.TasksManager.Services.GetRequiredService(loggerType.MakeGenericType(this.GetType()));
+            this.Message = args.Message;
+            this.ConversationHandle = args.Message.ConversationHandle;
+            this.TasksManager = args.TasksManager;
+            this.TaskInfo = args.TaskInfo;
+            this.EventDate = args.EventDate;
+            this.Parameters = args.Parameters;
         }
 
-        protected OnDemandTaskManager TasksManager
-        {
-            get
-            {
-                return this._tasksManager;
-            }
-        }
+        protected ILogger Logger { get; }
 
-        public Guid ID
-        {
-            get
-            {
-                return this._id;
-            }
-        }
+        protected OnDemandTaskManager TasksManager { get; }
+       
+        public SSSBMessage Message { get; }
 
-      
+        public Guid ConversationHandle { get; }
+
         public virtual string Name
         {
             get
@@ -91,9 +78,9 @@ namespace TaskBroker.SSSB.Executors
             }
         }
 
-        protected virtual void BeforeExecuteTask()
+        protected virtual Task BeforeExecuteTask(CancellationToken token)
         {
-           
+            return Task.CompletedTask;
         }
 
         protected virtual Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
@@ -102,8 +89,9 @@ namespace TaskBroker.SSSB.Executors
             return Task.FromResult(EndDialog());
         }
 
-        protected virtual void AfterExecuteTask()
+        protected virtual Task AfterExecuteTask(CancellationToken token)
         {
+            return Task.CompletedTask;
         }
 
         #region HandleMessage Results Helper Methods
@@ -113,9 +101,25 @@ namespace TaskBroker.SSSB.Executors
             return res;
         }
 
-        public HandleMessageResult EndDialog()
+        public HandleMessageResult EndDialogWithError(string error, int? errocode, Guid? conversationHandle = null)
         {
-            var res = (HandleMessageResult)this.Services.GetRequiredService<EndDialogMessageResult>();
+            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
+            {
+                error= error,
+                errorCode= errocode,
+                conversationHandle = conversationHandle
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this.Services, new object[] { args });
+            return res;
+        }
+
+        public HandleMessageResult EndDialog(Guid? conversationHandle = null)
+        {
+            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
+            {
+               conversationHandle= conversationHandle
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this.Services, new object[] { args });
             return res;
         }
 
@@ -123,7 +127,7 @@ namespace TaskBroker.SSSB.Executors
         {
             if (string.IsNullOrEmpty(fromService))
                 throw new ArgumentNullException(nameof(fromService));
-            DeferMessageResult.DeferArgs args = new DeferMessageResult.DeferArgs() {
+            DeferMessageResult.Args args = new DeferMessageResult.Args() {
                 IsOneWay = true,
                 fromService = fromService,
                 activationTime = activationTime,
@@ -134,14 +138,24 @@ namespace TaskBroker.SSSB.Executors
             return res;
         }
 
-        public HandleMessageResult StepCompleted()
+        public HandleMessageResult StepCompleted(Guid? conversationHandle = null)
         {
-              return (HandleMessageResult)this.Services.GetRequiredService<StepCompleteMessageResult>();
+            StepCompleteMessageResult.Args args = new StepCompleteMessageResult.Args()
+            {
+                conversationHandle = conversationHandle
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<StepCompleteMessageResult>(this.Services, new object[] { args });
+            return res;
         }
 
-        public HandleMessageResult EmptyMessage()
+        public HandleMessageResult EmptyMessage(Guid? conversationHandle = null)
         {
-              return (HandleMessageResult)this.Services.GetRequiredService<EmptyMessageResult>();
+            EmptyMessageResult.Args args = new EmptyMessageResult.Args()
+            {
+                conversationHandle = conversationHandle
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EmptyMessageResult>(this.Services, new object[] { args });
+            return res;
         }
 
         public HandleMessageResult CombinedResult(params HandleMessageResult[] resultHandlers)
@@ -153,54 +167,28 @@ namespace TaskBroker.SSSB.Executors
 
         public async Task<HandleMessageResult> ExecuteTaskAsync(CancellationToken token)
         {
-                this.BeforeExecuteTask();
+                await this.BeforeExecuteTask(token);
                 try
                 {
                     return await this.DoExecuteTask(token);
                 }
                 finally
                 {
-                    this.AfterExecuteTask();
+                    await this.AfterExecuteTask(token);
                 }
         }
 
-        public TaskInfo TaskInfo
-        {
-            get
-            {
-                return this._task;
-            }
-        }
+        public TaskInfo TaskInfo { get; }
 
         /// <summary>
         /// When the task was scheduledto the queue
         /// </summary>
-        public DateTime EventDate
-        {
-            get
-            {
-                return this._eventDate;
-            }
-        }
+        public DateTime EventDate { get; }
         
         /// <summary>
         /// parameters that was passed to the task
         /// </summary>
-        public NameValueCollection Parameters
-        {
-            get
-            {
-                return this._parameters;
-            }
-        }
-
-        protected ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        public NameValueCollection Parameters { get; }
 
         public bool HasStaticSettings
         {
@@ -231,7 +219,7 @@ namespace TaskBroker.SSSB.Executors
         public Task<ExecutorSettings> GetStaticSettingsByID(int settingID)
         {
             return _staticSettings.GetOrAdd(settingID, (key) => {
-                Task<string> settings = _tasksManager.GetStaticSettings(key);
+                Task<string> settings = TasksManager.GetStaticSettings(key);
                 return settings.ContinueWith((antecedent) => new ExecutorSettings(antecedent.Result));
             });
         }
@@ -276,7 +264,7 @@ namespace TaskBroker.SSSB.Executors
                 return;
             }
 
-            var connectionManager = this._tasksManager.Services.GetRequiredService<IConnectionManager>();
+            var connectionManager = this.Services.GetRequiredService<IConnectionManager>();
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew, TimeSpan.FromSeconds(30), TransactionScopeAsyncFlowOption.Enabled))
             using (var connection = await connectionManager.CreateSSSBConnectionAsync(CancellationToken.None))
             {
@@ -297,7 +285,7 @@ namespace TaskBroker.SSSB.Executors
         [Conditional("DEBUG")]
         public void Debug(string msg)
         {
-            _logger.LogInformation(msg);
+            Logger.LogInformation(msg);
         }
 
         protected virtual void Dispose()

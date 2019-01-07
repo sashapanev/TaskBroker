@@ -21,12 +21,7 @@ namespace TaskCoordinator.SSSB
 	[Serializable]
 	public class SSSBMessage : Message
     {
-        private Guid? _conversationHandle;
-		private Guid? _conversationGroupID;
-        private MessageValidationType _validationType;
-        private string _contractName;
-
-		#region Предопределенные типы сообщений
+		#region WellKnown MesssageTypes
 
 		/// <value>
 		/// System message type for event notification messages.
@@ -102,22 +97,28 @@ namespace TaskCoordinator.SSSB
         public const string PPS_EmptyMessageType = "PPS_EmptyMessageType";
         public const string PPS_StepCompleteMessageType = "PPS_StepCompleteMessageType";
 
+        public SSSBMessage(Guid conversationHandle, Guid conversationGroupID, MessageValidationType validationType, string contractName)
+        {
+            ConversationHandle = conversationHandle;
+            ConversationGroupID = conversationGroupID;
+            ValidationType = validationType;
+            ContractName = contractName;
+        }
+
         /// <summary>
         /// Идентификатор диалога обмена сообщениями.
         /// </summary>
-        public Guid? ConversationHandle
+        public Guid ConversationHandle
 		{
-			get { return _conversationHandle; }
-			set { _conversationHandle = value; }
+            get;
 		}
 
 		/// <summary>
 		/// Идентификатор группы сообщений.
 		/// </summary>
-		public Guid? ConversationGroupID
+		public Guid ConversationGroupID
 		{
-			get { return _conversationGroupID; }
-			set { _conversationGroupID = value; }
+            get;
 		}
 	
 		/// <summary>
@@ -125,8 +126,7 @@ namespace TaskCoordinator.SSSB
 		/// </summary>
 		public MessageValidationType ValidationType
 		{
-			get { return _validationType; }
-			set { _validationType = value; }
+            get;
 		}
 
 		/// <summary>
@@ -134,8 +134,7 @@ namespace TaskCoordinator.SSSB
 		/// </summary>
 		public string ContractName
 		{
-			get { return _contractName; }
-			set { _contractName = value; }
+            get;
 		}
 	}
 }

@@ -23,14 +23,15 @@ namespace TaskBroker.SSSB.Executors
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
-        protected override void BeforeExecuteTask()
+        protected override Task BeforeExecuteTask(CancellationToken token)
         {
             _settingsType = (SettingsType)Enum.Parse(typeof(SettingsType), this.Parameters["settingsType"]);
             _settingsID = int.Parse(this.Parameters["settingsID"]);
+            return Task.CompletedTask;
         }
 
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)

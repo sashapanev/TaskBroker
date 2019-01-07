@@ -26,7 +26,7 @@ namespace TaskBroker.SSSB
             return nameof(TaskMessageHandler);
         }
 
-        public override async Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs args)
+        public override async Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs serviceMessageArgs)
         {
             int? taskID = null;
             bool isMultiStepTask = false;
@@ -36,51 +36,51 @@ namespace TaskBroker.SSSB
 
             try
             {
-                args.Token.ThrowIfCancellationRequested();
-                message_xml = GetMessageXML(args.Message.Body);
+                serviceMessageArgs.Token.ThrowIfCancellationRequested();
+                message_xml = GetMessageXML(serviceMessageArgs.Message.Body);
                 GetMessageAttributes(message_xml, out taskID, out isMultiStepTask, out eventDate, out parameters);
             }
             catch (OperationCanceledException)
             {
-                args.TaskCompletionSource.TrySetCanceled(args.Token);
-                return args;
+                serviceMessageArgs.TaskCompletionSource.TrySetCanceled(serviceMessageArgs.Token);
+                return serviceMessageArgs;
             }
             catch (PPSException ex)
             {
-                args.TaskCompletionSource.TrySetException(ex);
-                return args;
+                serviceMessageArgs.TaskCompletionSource.TrySetException(ex);
+                return serviceMessageArgs;
             }
             catch (Exception ex)
             {
                 this._logger.LogError(ErrorHelper.GetFullMessage(ex));
-                args.TaskCompletionSource.TrySetException(new PPSException(ex));
-                return args;
+                serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
+                return serviceMessageArgs;
             }
 
-            OnDemandTaskManager taskManager = args.Services.GetRequiredService<OnDemandTaskManager>();
+            OnDemandTaskManager taskManager = serviceMessageArgs.Services.GetRequiredService<OnDemandTaskManager>();
             try
             {
-                args.Token.ThrowIfCancellationRequested();
+                serviceMessageArgs.Token.ThrowIfCancellationRequested();
                 var task = await taskManager.GetTaskInfo(taskID.Value);
-                args.TaskID = taskID.Value;
-                var execArgs = new ExecutorArgs(taskManager, task, eventDate, parameters, isMultiStepTask);
-                await ExecuteTask(execArgs, args);
+                serviceMessageArgs.TaskID = taskID.Value;
+                var executorArgs = new ExecutorArgs(taskManager, task, eventDate, parameters, isMultiStepTask, serviceMessageArgs);
+                await ExecuteTask(executorArgs, serviceMessageArgs);
             }
             catch (OperationCanceledException)
             {
-                args.TaskCompletionSource.TrySetCanceled(args.Token);
+                serviceMessageArgs.TaskCompletionSource.TrySetCanceled(serviceMessageArgs.Token);
             }
             catch (PPSException ex)
             {
-                args.TaskCompletionSource.TrySetException(ex);
+                serviceMessageArgs.TaskCompletionSource.TrySetException(ex);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ErrorHelper.GetFullMessage(ex));
-                args.TaskCompletionSource.TrySetException(new PPSException(ex));
+                serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
             }
 
-            return args;
+            return serviceMessageArgs;
         }
 
         protected virtual async Task ExecuteTask(ExecutorArgs executorArgs, ServiceMessageEventArgs args)

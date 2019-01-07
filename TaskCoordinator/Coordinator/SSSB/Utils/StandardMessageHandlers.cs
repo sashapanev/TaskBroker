@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System;
 using System.Data.SqlClient;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,41 +33,17 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="receivedMessage"></param>
         public async Task ErrorMessageHandler(SqlConnection dbconnection, SSSBMessage receivedMessage)
         {
-            if (receivedMessage.ConversationHandle.HasValue)
-            {
-                await _serviceBrokerHelper.EndConversation(dbconnection, receivedMessage.ConversationHandle.Value);
-                _logger.LogError(string.Format(ServiceBrokerResources.ErrorMessageReceivedErrMsg, receivedMessage.ConversationHandle.Value, Encoding.Unicode.GetString(receivedMessage.Body)));
-            }
+            await _serviceBrokerHelper.EndConversation(dbconnection, receivedMessage.ConversationHandle);
+            _logger.LogError(string.Format(ServiceBrokerResources.ErrorMessageReceivedErrMsg, receivedMessage.ConversationHandle, Encoding.Unicode.GetString(receivedMessage.Body)));
         }
 
         /// <summary>
         /// Стандартная обработка сообщения о завершении диалога
         /// </summary>
         /// <param name="receivedMessage"></param>
-        public async Task EndDialogMessageHandler(SqlConnection dbconnection, SSSBMessage receivedMessage)
+        public Task EndDialogMessageHandler(SqlConnection dbconnection, SSSBMessage receivedMessage)
         {
-            if (receivedMessage.ConversationHandle.HasValue)
-               await _serviceBrokerHelper.EndConversation(dbconnection, receivedMessage.ConversationHandle.Value);
-        }
-
-        /// <summary>
-        /// Отправка ответного сообщения о завершении задачи
-        /// </summary>
-        /// <param name="receivedMessage"></param>
-        public async Task SendStepCompleted(SqlConnection dbconnection, SSSBMessage receivedMessage)
-        {
-            if (receivedMessage.ConversationHandle.HasValue)
-                await _serviceBrokerHelper.SendStepCompletedMessage(dbconnection, receivedMessage.ConversationHandle.Value);
-        }
-
-        /// <summary>
-        /// Отправка пустого сообщения
-        /// </summary>
-        /// <param name="receivedMessage"></param>
-        public async Task SendEmptyMessage(SqlConnection dbconnection, SSSBMessage receivedMessage)
-        {
-            if (receivedMessage.ConversationHandle.HasValue)
-                await _serviceBrokerHelper.SendEmptyMessage(dbconnection, receivedMessage.ConversationHandle.Value);
+             return _serviceBrokerHelper.EndConversation(dbconnection, receivedMessage.ConversationHandle);
         }
 
         /// <summary>
@@ -75,8 +52,27 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="receivedMessage"></param>
         public Task EndDialogMessageWithErrorHandler(SqlConnection dbconnection, SSSBMessage receivedMessage, string message, int errorNumber)
         {
-            return _serviceBrokerHelper.EndConversationWithError(dbconnection, receivedMessage.ConversationHandle.Value, errorNumber, message);
+            return _serviceBrokerHelper.EndConversationWithError(dbconnection, receivedMessage.ConversationHandle, errorNumber, message);
         }
+
+        /// <summary>
+        /// Отправка ответного сообщения о завершении задачи
+        /// </summary>
+        /// <param name="receivedMessage"></param>
+        public async Task SendStepCompleted(SqlConnection dbconnection, Guid conversationHandle)
+        {
+             await _serviceBrokerHelper.SendStepCompletedMessage(dbconnection, conversationHandle);
+        }
+
+        /// <summary>
+        /// Отправка пустого сообщения
+        /// </summary>
+        /// <param name="receivedMessage"></param>
+        public async Task SendEmptyMessage(SqlConnection dbconnection, Guid conversationHandle)
+        {
+             await _serviceBrokerHelper.SendEmptyMessage(dbconnection, conversationHandle);
+        }
+
         #endregion
     }
 }

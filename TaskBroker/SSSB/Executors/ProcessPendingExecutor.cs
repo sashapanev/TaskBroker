@@ -23,19 +23,6 @@ namespace TaskBroker.SSSB.Executors
             _objectID = null;
         }
 
-        public override bool IsAsyncProcessing
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        protected override void BeforeExecuteTask()
-        {
-           
-        }
-
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
             var connectionManager = this.Services.GetRequiredService<IConnectionManager>();

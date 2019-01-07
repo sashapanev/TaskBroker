@@ -28,11 +28,16 @@ namespace TaskBroker.SSSB.Executors
             }
         }
 
-        protected override void BeforeExecuteTask()
+        protected override async Task BeforeExecuteTask(CancellationToken token)
         {
             try
             {
                 this._metaDataID = Int32.Parse(this.Parameters["MetaDataID"]);
+                var metaData = await MetaDataManager.GetMetaData(token);
+                if (metaData.IsCanceled == true)
+                {
+                    throw new OperationCanceledException();
+                }
             }
             catch (Exception ex)
             {
@@ -44,12 +49,6 @@ namespace TaskBroker.SSSB.Executors
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
             if (!string.IsNullOrEmpty(_error))
-            {
-                throw new OperationCanceledException();
-            }
-
-            var metaData = await MetaDataManager.GetMetaData(token);
-            if (metaData.IsCanceled == true)
             {
                 throw new OperationCanceledException();
             }

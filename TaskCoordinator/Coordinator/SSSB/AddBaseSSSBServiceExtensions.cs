@@ -18,9 +18,6 @@ namespace TaskCoordinator.SSSB
             services.TryAddSingleton<IStandardMessageHandlers, StandardMessageHandlers>();
 
             services.TryAddSingleton<NoopMessageResult>();
-            services.TryAddSingleton<EndDialogMessageResult>();
-            services.TryAddSingleton<StepCompleteMessageResult>();
-            services.TryAddSingleton<EmptyMessageResult>();
         }
     }
 }

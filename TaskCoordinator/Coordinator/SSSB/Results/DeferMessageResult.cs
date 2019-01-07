@@ -15,9 +15,9 @@ namespace TaskCoordinator.SSSB
         private readonly bool _isOneWay;
         private readonly Guid? _initiatorConversationGroupID;
 
-        public class DeferArgs
+        public class Args
         {
-            public DeferArgs()
+            public Args()
             {
                 IsOneWay = true;
             }
@@ -29,7 +29,7 @@ namespace TaskCoordinator.SSSB
             public Guid? initiatorConversationGroupID { get; set; }
         }
 
-        public DeferMessageResult(IServiceBrokerHelper serviceBrokerHelper, DeferArgs args)
+        public DeferMessageResult(IServiceBrokerHelper serviceBrokerHelper, Args args)
         {
             _serviceBrokerHelper = serviceBrokerHelper;
             _fromService = args.fromService ?? throw new ArgumentNullException(nameof(args.fromService));

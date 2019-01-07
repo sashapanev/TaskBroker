@@ -42,7 +42,6 @@ namespace TaskCoordinator.SSSB
         /// <returns></returns>
         private SSSBMessage FillMessageFromReader(IDataReader reader)
         {
-            SSSBMessage message = new SSSBMessage();
             //conversation_group_id, 
             //conversation_handle,
             //message_sequence_number, 
@@ -51,19 +50,23 @@ namespace TaskCoordinator.SSSB
             //message_type_name, 
             //validation, 
             //message_body 
-            message.ConversationGroupID = reader.GetGuid(0);
-            message.ConversationHandle = reader.GetGuid(1);
-            message.SequenceNumber = reader.GetInt64(2);
-            message.ServiceName = reader.GetString(3);
-            message.ContractName = reader.GetString(4);
-            message.MessageType = reader.GetString(5);
+            Guid conversationGroupID = reader.GetGuid(0);
+            Guid conversationHandle = reader.GetGuid(1);
+            long sequenceNumber = reader.GetInt64(2);
+            string serviceName = reader.GetString(3);
+            string contractName = reader.GetString(4);
+            string messageType = reader.GetString(5);
             string validation = reader.GetString(6);
+            MessageValidationType validationType = MessageValidationType.None;
             if (validation == "X")
-                message.ValidationType = MessageValidationType.XML;
+                validationType = MessageValidationType.XML;
             else if (validation == "E")
-                message.ValidationType = MessageValidationType.Empty;
-            else
-                message.ValidationType = MessageValidationType.None;
+                validationType = MessageValidationType.Empty;
+
+            SSSBMessage message = new SSSBMessage(conversationHandle, conversationGroupID, validationType, contractName);
+            message.SequenceNumber = sequenceNumber;
+            message.ServiceName = serviceName;
+            message.MessageType = messageType;
 
             if (!reader.IsDBNull(7))
             {
@@ -250,9 +253,9 @@ namespace TaskCoordinator.SSSB
 
         protected override void OnProcessMessageException(Exception ex, SSSBMessage msg)
         {
-            if (msg != null && msg.ConversationHandle.HasValue)
+            if (msg != null)
             {
-                this._service.AddError(msg.ConversationHandle.Value, ex);
+                this._service.AddError(msg.ConversationHandle, ex);
             }
         }
     }

@@ -25,6 +25,16 @@ namespace TaskBroker.SSSB
             return nameof(TaskEndedMessageHandler);
         }
 
+        protected HandleMessageResult EndDialog(Guid? conversationHandle = null)
+        {
+            EndDialogMessageResult.Args args = new EndDialogMessageResult.Args()
+            {
+                conversationHandle = conversationHandle
+            };
+            var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<EndDialogMessageResult>(this._rootServices, new object[] { args });
+            return res;
+        }
+
         public override Task<ServiceMessageEventArgs> HandleMessage(ISSSBService sender, ServiceMessageEventArgs args)
         {
             try
@@ -32,7 +42,7 @@ namespace TaskBroker.SSSB
                 // после выполнения задачи снова включить таймер
                 lock (ScheduleTimer.Timers)
                 {
-                    Guid conversationGroup = args.Message.ConversationGroupID.Value;
+                    Guid conversationGroup = args.Message.ConversationGroupID;
                     var timer = (from t in BaseSheduleTimer.Timers.Values
                                  where t.ConversationGroup.HasValue && t.ConversationGroup.Value == conversationGroup
                                  select t).SingleOrDefault();
@@ -49,8 +59,7 @@ namespace TaskBroker.SSSB
             }
             finally
             {
-                var res = (HandleMessageResult)this._rootServices.GetRequiredService<EndDialogMessageResult>();
-                args.TaskCompletionSource.SetResult(res);
+                args.TaskCompletionSource.SetResult(EndDialog());
             }
             return Task.FromResult(args);
         }
