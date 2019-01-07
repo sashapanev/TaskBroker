@@ -28,12 +28,18 @@ namespace TaskBroker.SSSB.Executors
             this.TaskInfo = args.TaskInfo;
             this.EventDate = args.Atributes.EventDate;
             this.Parameters = args.Atributes.Parameters;
+            this.IsDefered = args.Atributes.isDefered;
+            this.AttemptNumber = args.Atributes.attemptNumber;
         }
 
         protected ILogger Logger { get; }
 
         protected OnDemandTaskManager TasksManager { get; }
        
+        public bool IsDefered { get; }
+
+        public int AttemptNumber { get; }
+
         public SSSBMessage Message { get; }
 
         public Guid ConversationHandle

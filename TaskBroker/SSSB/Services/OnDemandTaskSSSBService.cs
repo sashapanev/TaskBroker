@@ -14,6 +14,7 @@ namespace TaskBroker.SSSB.Services
         private DateTime _startDateTime;
         public const string ONDEMAND_TASK_SERVICE_NAME = "PPS_OnDemandTaskService";
         public const string ONDEMAND_TASK_MESSAGE_TYPE = "PPS_OnDemandTaskMessageType";
+        public const string DEFERED_MESSAGE_TYPE = "PPS_DeferedMessageType";
         private bool _IsStopNeeded = false;
         private CancellationTokenSource _stopSource;
 
@@ -58,6 +59,7 @@ namespace TaskBroker.SSSB.Services
             {
                 this._stopSource = new CancellationTokenSource();
                 _sssbService.RegisterMessageHandler(ONDEMAND_TASK_MESSAGE_TYPE, new TaskMessageHandler(this._services));
+                _sssbService.RegisterMessageHandler(DEFERED_MESSAGE_TYPE, new DeferedMessageHandler(this._services));
                 var tasks = _sssbService.Start(_stopSource.Token);
                 _IsStopNeeded = true;
                 await tasks;

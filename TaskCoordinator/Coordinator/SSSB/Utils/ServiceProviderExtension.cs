@@ -33,18 +33,19 @@ namespace TaskCoordinator.SSSB
             return res;
         }
 
-        public static HandleMessageResult Defer(this IServiceProvider Services, string fromService, DateTime activationTime, Guid? initiatorConversationGroupID = null, TimeSpan? lifeTime = null)
+        public static HandleMessageResult Defer(this IServiceProvider Services, string fromService, DateTime activationTime, int attemptNumber = 1, TimeSpan? lifeTime = null)
         {
             if (string.IsNullOrEmpty(fromService))
                 throw new ArgumentNullException(nameof(fromService));
+
             DeferMessageResult.Args args = new DeferMessageResult.Args()
             {
-                IsOneWay = true,
                 fromService = fromService,
                 activationTime = activationTime,
-                initiatorConversationGroupID = initiatorConversationGroupID,
+                attemptNumber = attemptNumber,
                 lifeTime = lifeTime
             };
+
             var res = (HandleMessageResult)ActivatorUtilities.CreateInstance<DeferMessageResult>(Services, new object[] { args });
             return res;
         }

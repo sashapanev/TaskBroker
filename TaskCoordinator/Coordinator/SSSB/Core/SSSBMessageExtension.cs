@@ -8,7 +8,12 @@ namespace TaskCoordinator.SSSB
     {
         public static XElement GetMessageXML(this SSSBMessage message)
         {
-            using (MemoryStream ms = new MemoryStream(message.Body))
+            return GetMessageXML(message.Body);
+        }
+
+        public static XElement GetMessageXML(this byte[] body)
+        {
+            using (MemoryStream ms = new MemoryStream(body))
             using (StreamReader sr = new StreamReader(ms, Encoding.Unicode, true))
             {
                 return XElement.Load(sr);

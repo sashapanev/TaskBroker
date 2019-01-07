@@ -10,8 +10,9 @@ namespace TaskBroker.SSSB
         public bool IsMultiStepTask { get; set; }
         public DateTime EventDate { get; set; }
         public NameValueCollection Parameters { get; set; }
+        public bool isDefered { get; set; }
+        public int attemptNumber { get; set; }
     }
-
 
     public static class MessageAtributesHelper
     {

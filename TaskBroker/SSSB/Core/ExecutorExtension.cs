@@ -21,9 +21,9 @@ namespace TaskBroker.SSSB
             return executor.Services.EndDialog(conversationHandle);
         }
 
-        public static HandleMessageResult Defer(this BaseExecutor executor, string fromService, DateTime activationTime, Guid? initiatorConversationGroupID = null, TimeSpan? lifeTime = null)
+        public static HandleMessageResult Defer(this BaseExecutor executor, string fromService, DateTime activationTime, int attemptNumber = 1, TimeSpan? lifeTime = null)
         {
-            return executor.Services.Defer(fromService, activationTime, initiatorConversationGroupID, lifeTime);
+            return executor.Services.Defer(fromService, activationTime, attemptNumber, lifeTime);
         }
 
         public static HandleMessageResult StepCompleted(this BaseExecutor executor, Guid? conversationHandle = null)

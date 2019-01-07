@@ -7,7 +7,6 @@ namespace TaskBroker.SSSB.Executors
 {
     public class TestExecutor : BaseExecutor
     {
-        private static int _counter = 0;
         private string _batchId;
         private string _category;
         private string _clientContextID;
@@ -28,16 +27,11 @@ namespace TaskBroker.SSSB.Executors
         protected override async Task<HandleMessageResult> DoExecuteTask(CancellationToken token)
         {
             this.Debug(string.Format("Executing SSSB Task: {0} Batch: {1} ClientContextID {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContextID));
-            if (_counter < 1)
+            if (this.AttemptNumber == 0)
             {
-                Interlocked.Increment(ref _counter);
                 this.Debug(string.Format("*** Defer SSSB Task: {0} Batch: {1} ClientContextID {2}", this.TaskInfo.OnDemandTaskID, _batchId, _clientContextID ));
                 Guid initiatorConversationGroup = Guid.Parse(_clientContextID);
-                // Execute on the same conversation
-                // return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), initiatorConversationGroup);
-                
-                // Execute on a new conversation: first execute EndDialog and then Defer
-                return this.CombinedResult(this.EndDialog(), this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(5), null));
+                return this.Defer("PPS_OnDemandTaskService", DateTime.Now.AddSeconds(10), this.AttemptNumber + 1);
             }
             else
             {
@@ -49,7 +43,6 @@ namespace TaskBroker.SSSB.Executors
 
         protected override Task AfterExecuteTask(CancellationToken token)
         {
-            //Interlocked.Increment(ref _counter);
             return Task.CompletedTask;
         }
     }

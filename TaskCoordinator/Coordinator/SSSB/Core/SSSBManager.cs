@@ -191,12 +191,8 @@ namespace TaskCoordinator.SSSB
                 String contractName,
                 int? lifeTime,
                 bool? isWithEncryption,
-                Guid? relatedConversationGroupID,
-                Guid? relatedConversationHandle,
                 byte[] messageBody,
-                String messageType,
-                Guid? initiatorConversationGroupID,
-                bool isOneWay = true
+                String messageType
                 )
         {
             long? pendingMessageID = null;
@@ -216,12 +212,8 @@ namespace TaskCoordinator.SSSB
                     command.Parameters.Add(new SqlParameter("@contractName", SqlDbType.NVarChar, 255, ParameterDirection.Input, true, 0, 0, "contractName", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(contractName)));
                     command.Parameters.Add(new SqlParameter("@lifeTime", SqlDbType.Int, 0, ParameterDirection.Input, true, 0, 0, "lifeTime", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(lifeTime)));
                     command.Parameters.Add(new SqlParameter("@isWithEncryption", SqlDbType.Bit, 0, ParameterDirection.Input, true, 0, 0, "isWithEncryption", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(isWithEncryption)));
-                    command.Parameters.Add(new SqlParameter("@relatedConversationGroupID", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "relatedConversationGroupID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(relatedConversationGroupID)));
-                    command.Parameters.Add(new SqlParameter("@relatedConversationHandle", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "relatedConversationHandle", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(relatedConversationHandle)));
                     command.Parameters.Add(new SqlParameter("@messageBody", SqlDbType.VarBinary, -1, ParameterDirection.Input, true, 0, 0, "messageBody", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(messageBody)));
                     command.Parameters.Add(new SqlParameter("@messageType", SqlDbType.NVarChar, 255, ParameterDirection.Input, true, 0, 0, "messageType", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(messageType)));
-                    command.Parameters.Add(new SqlParameter("@initiatorConversationGroupID", SqlDbType.UniqueIdentifier, 0, ParameterDirection.Input, true, 0, 0, "initiatorConversationGroupID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(initiatorConversationGroupID)));
-                    command.Parameters.Add(new SqlParameter("@isOneWay", SqlDbType.Bit, 0, ParameterDirection.Input, false, 0, 0, "isOneWay", DataRowVersion.Current, isOneWay));
                     command.Parameters.Add(new SqlParameter("@pendingMessageID", SqlDbType.BigInt, 0, ParameterDirection.InputOutput, true, 0, 0, "pendingMessageID", DataRowVersion.Current, NullableHelper.DBNullConvertFrom(pendingMessageID)));
 
                     await command.ExecuteNonQueryAsync();

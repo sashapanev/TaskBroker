@@ -11,13 +11,21 @@ namespace TaskBroker.SSSB
 {
     public class TaskMessageHandler : BaseMessageHandler<ServiceMessageEventArgs>
     {
-        private readonly ILogger _logger;
-        private readonly IServiceProvider _rootServices;
-
-        public TaskMessageHandler(IServiceProvider rootProvider)
+        protected ILogger Logger
         {
-            _rootServices = rootProvider;
-            _logger = rootProvider.GetRequiredService<ILogger<TaskMessageHandler>>();
+            get;
+        }
+
+        protected IServiceProvider RootServices
+        {
+            get;
+        }
+
+        public TaskMessageHandler(IServiceProvider rootServices)
+        {
+            RootServices = rootServices;
+            Type loggerType = typeof(ILogger<>);
+            this.Logger = (ILogger)RootServices.GetRequiredService(loggerType.MakeGenericType(this.GetType()));
         }
 
         protected override string GetName()
@@ -47,7 +55,7 @@ namespace TaskBroker.SSSB
             }
             catch (Exception ex)
             {
-                this._logger.LogError(ErrorHelper.GetFullMessage(ex));
+                this.Logger.LogError(ErrorHelper.GetFullMessage(ex));
                 serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
                 return serviceMessageArgs;
             }
@@ -71,11 +79,17 @@ namespace TaskBroker.SSSB
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ErrorHelper.GetFullMessage(ex));
+                Logger.LogCritical(ErrorHelper.GetFullMessage(ex));
                 serviceMessageArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
             }
 
             return serviceMessageArgs;
+        }
+
+        protected virtual Task<HandleMessageResult> RunExecutor(IExecutor executor, ServiceMessageEventArgs args)
+        {
+            Task<HandleMessageResult> execResTask = executor.ExecuteTaskAsync(args.Token);
+            return execResTask;
         }
 
         protected virtual async Task ExecuteTask(ExecutorArgs executorArgs, ServiceMessageEventArgs args)
@@ -84,7 +98,7 @@ namespace TaskBroker.SSSB
             {
                 var executor = (IExecutor)ActivatorUtilities.CreateInstance(args.Services, executorArgs.TaskInfo.ExecutorType, new object[] { executorArgs });
                 executorArgs.TasksManager.CurrentExecutor = executor;
-                Task<HandleMessageResult> execResTask = executor.ExecuteTaskAsync(args.Token);
+                Task<HandleMessageResult> execResTask = RunExecutor(executor, args);
                 if (executor.IsAsyncProcessing && !execResTask.IsCompleted)
                 {
                     this.ExecuteLongRun(execResTask, executorArgs, args);
@@ -105,7 +119,7 @@ namespace TaskBroker.SSSB
             }
             catch (Exception ex)
             {
-                _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                Logger.LogError(ErrorHelper.GetFullMessage(ex));
                 args.TaskCompletionSource.TrySetException(new PPSException(ex));
             }
         }
@@ -143,7 +157,7 @@ namespace TaskBroker.SSSB
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ErrorHelper.GetFullMessage(ex));
+                    Logger.LogError(ErrorHelper.GetFullMessage(ex));
                     serviceArgs.TaskCompletionSource.TrySetException(new PPSException(ex));
                 }
             }, TaskContinuationOptions.ExecuteSynchronously);

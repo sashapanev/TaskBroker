@@ -4,6 +4,7 @@ using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using TaskCoordinator.Database;
 
 namespace TaskCoordinator.SSSB.Utils
@@ -193,11 +194,32 @@ namespace TaskCoordinator.SSSB.Utils
         /// <param name="isWithEncryption"></param>
         /// <param name="activationTime"></param>
         /// <param name="objectID"></param>
-        public async Task<long?> SendPendingMessage(SqlConnection dbconnection, string fromService, SSSBMessage message, TimeSpan lifetime, bool isWithEncryption, Guid? initiatorConversationGroupID, DateTime activationTime, string objectID, bool isOneWay = true)
+        public async Task<long?> SendPendingMessage(SqlConnection dbconnection, 
+            SSSBMessage message, 
+            string fromService,
+            TimeSpan lifetime, 
+            bool isWithEncryption, 
+            DateTime activationTime, 
+            string objectID,
+            int attemptNumber)
 		{
-            Debug($"Executing method SendPendingMessage(ConversationHandle: {message.ConversationHandle}, fromService: {fromService}, initiatorConversationGroupID: {initiatorConversationGroupID}, activationTime: {activationTime: dd.MM.yyyy HH:mm:ss}");
+            Debug($"Executing method SendPendingMessage(ConversationHandle: {message.ConversationHandle}, fromService: {fromService}, activationTime: {activationTime: dd.MM.yyyy HH:mm:ss}");
 			try
 			{
+                XElement xmessage = new XElement("DeferedMessage",
+                    new XAttribute("conversationHandle", message.ConversationHandle),
+                    new XAttribute("conversationGroupID", message.ConversationGroupID),
+                    new XAttribute("messageType", message.MessageType),
+                    new XAttribute("serviceName", message.ServiceName),
+                    new XAttribute("contractName", message.ContractName),
+                    new XAttribute("sequenceNumber", message.SequenceNumber),
+                    new XAttribute("validationType", message.ValidationType),
+                    new XAttribute("attemptNumber", attemptNumber),
+                    new XElement("body", Convert.ToBase64String(message.Body))
+                );
+
+                byte[] body = xmessage.ConvertToBytes();
+
                 long? pendingMessageID = await _manager.SendPendingMessage(
                     dbconnection, 
                     objectID, 
@@ -206,13 +228,9 @@ namespace TaskCoordinator.SSSB.Utils
                     message.ServiceName,
                     message.ContractName, 
                     (int)lifetime.TotalSeconds, 
-                    isWithEncryption, 
-                    null, 
-                    null, 
-                    message.Body, 
-                    message.MessageType, 
-                    initiatorConversationGroupID, 
-                    isOneWay);
+                    isWithEncryption,
+                    body,
+                    "PPS_DeferedMessageType");
                 return pendingMessageID;
             }
             catch (SqlException ex)
