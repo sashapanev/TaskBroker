@@ -6,9 +6,9 @@ using System;
 using TaskBroker.SSSB;
 using TaskBroker.SSSB.Scheduler;
 using TaskBroker.SSSB.Services;
-using TaskCoordinator.SSSB;
-using TaskCoordinator.SSSB.EF;
-using TaskCoordinator.SSSB.Utils;
+using Coordinator.SSSB;
+using Coordinator.SSSB.EF;
+using Coordinator.SSSB.Utils;
 
 namespace TaskBroker.Services
 {

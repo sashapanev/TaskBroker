@@ -4,8 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TaskBroker.Services;
 using TaskBroker.SSSB.Services;
-using TaskCoordinator.SSSB;
-using TaskCoordinator.SSSB.EF;
+using Coordinator.SSSB;
+using Coordinator.SSSB.EF;
 
 namespace TaskBroker.SSSB
 {

@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator
+namespace Coordinator
 {
     public interface ITaskCoordinatorAdvanced : ITaskCoordinator, IQueueActivator
     {

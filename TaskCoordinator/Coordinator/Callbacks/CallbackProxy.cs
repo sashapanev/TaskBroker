@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator.Callbacks
+namespace Coordinator.Callbacks
 {
     public class CallbackProxy<T> : ICallbackProxy<T>, IDisposable
     {

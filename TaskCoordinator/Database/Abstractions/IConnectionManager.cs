@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
     public interface IConnectionManager
     {

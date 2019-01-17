@@ -30,6 +30,7 @@
 <ItemGroup>
   <ProjectReference Include="..\Extensions.Logging.RollingFile\Extensions.Logging.RollingFile.csproj" />
   <ProjectReference Include="..\Shared\Shared.csproj" />
+  <ProjectReference Include="..\SSSBLayer\SSSBLayer.csproj" />
   <ProjectReference Include="..\TaskCoordinator\TaskCoordinator.csproj" />
 </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator
+namespace Coordinator
 {
     public interface IMessageDispatcher<TMessage, TState>
     {

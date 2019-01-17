@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
 	/// <summary>
 	/// поток для записи двоичных данных

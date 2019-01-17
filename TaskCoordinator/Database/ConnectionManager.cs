@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
     public class ConnectionManager : IConnectionManager
     {

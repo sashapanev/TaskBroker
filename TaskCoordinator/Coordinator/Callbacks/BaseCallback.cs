@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator.Callbacks
+namespace Coordinator.Callbacks
 {
     public abstract class BaseCallback<T> : ICallback<T>
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
     public class DbNameConnectionFactory : DbConnectionFactory
     {

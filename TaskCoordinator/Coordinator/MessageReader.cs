@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskCoordinator
+namespace Coordinator
 {
     public abstract class MessageReader<TMessage, TState> : IMessageReader
         where TMessage:class

@@ -4,7 +4,7 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
     public class DbConnectionFactory : IDbConnectionFactory
     {

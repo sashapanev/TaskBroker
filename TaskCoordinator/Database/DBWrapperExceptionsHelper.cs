@@ -4,7 +4,7 @@ using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
 
-namespace TaskCoordinator.Database
+namespace Coordinator.Database
 {
     public static class DBWrapperExceptionsHelper
     {
